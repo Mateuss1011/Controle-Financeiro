@@ -101,7 +101,7 @@ Este projeto foi desenvolvido para rodar em ambiente local, sem utilização de 
 ## 1️⃣ Clonar o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/controle-financeiro.git
+git clone https://github.com/Mateuss1011/Controle-Financeiro.git
 cd controle-financeiro
 
 2️⃣ Pré-requisitos
