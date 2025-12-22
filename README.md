@@ -40,7 +40,7 @@ Atualmente, encontra-se estável e pronto para demonstração, uso acadêmico e 
 
 ### Front-end
 - **React**
-- **Bootstrap**
+- **React-Bootstrap**
 - **Consumo de API REST**
 - **Componentização**
 - **Gerenciamento básico de estado**
