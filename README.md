@@ -89,3 +89,100 @@ O projeto foi finalizado, porém permite diversas melhorias futuras, como:
 Formado em Análise e Desenvolvimento de Sistemas  
 
 Projeto desenvolvido com foco em aprendizado prático, aplicação de conceitos reais de mercado e consolidação de habilidades. 
+
+
+🚀 Configuração e Inicialização do Projeto
+=========================================
+
+Este projeto foi desenvolvido para rodar em ambiente local, sem utilização de Docker.
+
+---
+
+## 1️⃣ Clonar o repositório
+
+```bash
+git clone https://github.com/seu-usuario/controle-financeiro.git
+cd controle-financeiro
+
+2️⃣ Pré-requisitos
+
+Antes de iniciar, certifique-se de ter instalado:
+
+PHP (versão compatível com Laravel)
+Composer
+Node.js e npm
+MySQL
+Git
+
+3️⃣ Configurar o Back-end (Laravel)
+
+Criar o arquivo .env
+cp .env.example .env
+
+Configurar conexão com o banco de dados
+
+No arquivo .env, ajuste as variáveis:
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=controle_financeiro
+DB_USERNAME=root
+DB_PASSWORD=
+
+
+Crie o banco de dados no MySQL com o mesmo nome informado acima.
+
+Instalar dependências do Laravel
+composer install
+
+Gerar chave da aplicação
+php artisan key:generate
+
+Executar migrations e seeders
+php artisan migrate --seed
+
+Limpar caches da aplicação
+
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+
+Subir o servidor back-end
+php artisan serve
+
+
+O back-end ficará disponível em:
+
+👉 http://localhost:8000
+
+4️⃣ Configurar o Front-end (React)
+
+Acesse a pasta do front-end (caso esteja separada):
+
+cd frontend
+
+Instalar dependências
+npm install
+
+Iniciar o servidor front-end
+npm start
+
+
+O front-end ficará disponível em:
+
+👉 http://localhost:3000
+
+✅ Projeto pronto para uso
+
+Com o back-end e o front-end em execução, o sistema de Controle Financeiro estará pronto para uso em ambiente local.
+
+⚠️ Possíveis Problemas Comuns
+
+Verifique se o MySQL está em execução
+
+Confirme se as credenciais do banco estão corretas no .env
+
+Caso altere o .env, execute:
+
+php artisan config:clear
