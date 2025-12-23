@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Categoria; // 👈 Você já tem isso, ótimo!
+use App\Models\Categoria; //
 
 class CategoriaSeeder extends Seeder
 {
@@ -13,10 +13,6 @@ class CategoriaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Vamos trocar a factory por dados reais
-        // Categoria::factory(10)->create(); 👈 Comente ou apague esta linha
-
-        // E adicione as categorias que você realmente usa:
         Categoria::create([
             'nome' => 'Alimentação (Supermercado)',
             'tipo' => 'necessidade'

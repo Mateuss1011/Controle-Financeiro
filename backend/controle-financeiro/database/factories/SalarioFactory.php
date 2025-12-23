@@ -17,9 +17,7 @@ class SalarioFactory extends Factory
     public function definition(): array
     {
         return [
-            'valor' => $this->faker->randomFloat(2, 1000, 10000),
-            'mes' => $this->faker->monthName(),
-            'ano' => $this->faker->year(),
+            'valor' => $this->faker->randomFloat(2, 1000, 10000)
         ];
     }
 }

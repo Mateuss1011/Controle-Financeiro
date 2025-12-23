@@ -11,7 +11,7 @@ class GastoController extends Controller
 {
     public function index()
     {
-        // ✅ Retorna os gastos com categoria e salário (se tiver)
+
         return GastoResource::collection(
             Gasto::with(['categoria', 'salario'])->get()
         );
@@ -19,7 +19,7 @@ class GastoController extends Controller
 
     public function store(Request $request)
     {
-        // ✅ Agora o salario_id é opcional
+
         $validated = $request->validate([
             'descricao' => 'required|string|max:255',
             'valor' => 'required|numeric',
@@ -28,10 +28,10 @@ class GastoController extends Controller
             'salario_id' => 'nullable|exists:salarios,id',
         ]);
 
-        // ✅ Cria o gasto
+
         $gasto = Gasto::create($validated);
 
-        // ✅ Retorna um JSON bonitinho
+
         return response()->json([
             'message' => 'Gasto adicionado com sucesso!',
             'data' => $gasto
