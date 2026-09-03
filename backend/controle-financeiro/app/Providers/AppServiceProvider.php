@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Analise\AnalisadorFinanceiroInterface;
+use App\Services\Analise\AnalisadorPorRegras;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -11,7 +13,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        /*
+         * Ponto de extensão para IA: hoje o analisador é determinístico. Trocar
+         * por um AnalisadorPorIA é uma linha aqui — nem o controller nem o
+         * frontend conhecem a implementação.
+         */
+        $this->app->bind(AnalisadorFinanceiroInterface::class, AnalisadorPorRegras::class);
     }
 
     public function boot(): void

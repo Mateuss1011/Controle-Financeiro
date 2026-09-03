@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\RegraController;
 use App\Http\Controllers\RendaController;
@@ -35,4 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->parameters(['rendas' => 'renda']);
 
     Route::get('/regra', RegraController::class);
+
+    // Endpoint agregado: o Dashboard inteiro numa requisição só.
+    Route::get('/dashboard', DashboardController::class);
 });
