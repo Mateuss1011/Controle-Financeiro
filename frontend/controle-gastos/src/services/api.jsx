@@ -1,13 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000/api", // base da tua API Laravel
+  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
 });
 
-// ✅ Intercepta todas as requisições e adiciona o token automaticamente
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // pega o token salvo no login
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -16,14 +15,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Intercepta respostas com erro (ex: token expirado)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.warn("Sessão expirada. Faça login novamente.");
       localStorage.removeItem("token");
-      window.location.href = "/"; // redireciona pra tela de login
+
+      // Sem esta guarda, um 401 disparado na própria tela de login recarrega
+      // a página em loop.
+      if (window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }

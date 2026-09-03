@@ -3,7 +3,6 @@ import api from "../services/api";
 
 export const GastosContext = createContext();
 
-
 export function GastosProvider({ children }) {
   const [gastos, setGastos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -11,7 +10,7 @@ export function GastosProvider({ children }) {
   async function carregarCategorias() {
     try {
       const response = await api.get("/categorias");
-      setCategorias(response.data);
+      setCategorias(response.data.data);
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
     }
@@ -35,13 +34,17 @@ export function GastosProvider({ children }) {
     await api.put(`/gastos/${gasto.id}`, {
       descricao: gasto.descricao,
       valor: gasto.valor,
-      data: gasto.data,
+      data: gasto.data_lancamento,
       categoria_id: gasto.categoria.id,
     });
     carregarGastos();
   }
 
   useEffect(() => {
+    // A API exige autenticação: buscar sem token só produziria 401 na tela
+    // de login.
+    if (!localStorage.getItem("token")) return;
+
     carregarCategorias();
     carregarGastos();
   }, []);
@@ -54,7 +57,7 @@ export function GastosProvider({ children }) {
         carregarGastos,
         carregarCategorias,
         deletarGasto,
-        atualizarGasto
+        atualizarGasto,
       }}
     >
       {children}

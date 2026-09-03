@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useSalario } from "../Context/useSalario";
 
 export default function Regra() {
-  const { salario } = useSalario(); // 🔥 pega o salário do contexto
+  const { salario } = useSalario(); 
   const [valores, setValores] = useState({
     necessidades: 0,
     desejos: 0,
     poupanca: 0,
   });
 
-  // recalcula sempre que o salário mudar
   useEffect(() => {
     if (salario > 0) {
       setValores({

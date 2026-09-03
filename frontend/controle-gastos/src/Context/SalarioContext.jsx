@@ -8,36 +8,36 @@ export function SalarioProvider({ children }) {
   const [salarioId, setSalarioId] = useState(null);
 
   useEffect(() => {
+    if (!localStorage.getItem("token")) return;
     carregarSalario();
   }, []);
 
   const carregarSalario = async () => {
     try {
-      const response = await api.get("/salarios");
+      // O histórico vem ordenado da competência mais recente para a mais antiga.
+      const response = await api.get("/rendas");
+      const rendas = response.data.data;
 
-      if (response.data.length > 0) {
-        const maisRecente = response.data[0];
-
-        setSalario(parseFloat(maisRecente.valor));
-        setSalarioId(maisRecente.id);
+      if (rendas.length > 0) {
+        setSalario(parseFloat(rendas[0].valor));
+        setSalarioId(rendas[0].id);
       }
     } catch (error) {
-      console.error("Erro ao carregar salário no Context:", error);
+      console.error("Erro ao carregar renda no Context:", error);
     }
   };
 
   const atualizarSalario = async (valor) => {
     try {
-      if (salarioId) {
-        await api.put(`/salarios/${salarioId}`, { valor });
-      } else {
-        const res = await api.post("/salarios", { valor });
-        setSalarioId(res.data.id);
-      }
+      // O POST é um upsert por competência: registrar duas vezes no mesmo mês
+      // atualiza o registro em vez de criar outro.
+      const res = await api.post("/rendas", { valor });
 
-      setSalario(parseFloat(valor)); // Atualiza o contexto
+      setSalarioId(res.data.data.id);
+      setSalario(parseFloat(res.data.data.valor));
     } catch (error) {
-      console.error("Erro ao atualizar salário no Context:", error);
+      console.error("Erro ao atualizar renda no Context:", error);
+      throw error;
     }
   };
 

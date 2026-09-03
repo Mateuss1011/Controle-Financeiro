@@ -8,7 +8,7 @@ export default function Resumo() {
 
   const [totalGastos, setTotalGastos] = useState(0);
 
-  // Recalcula sempre que a lista de gastos mudar
+  
   useEffect(() => {
     if (gastos && gastos.length > 0) {
       const soma = gastos.reduce(

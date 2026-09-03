@@ -1,57 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import api from "../services/api";
 import { Button, Form } from "react-bootstrap";
 import { useGastos } from "../Context/GastosContext";
 
-
 export default function AdicionarGasto() {
-  const { carregarGastos } = useGastos(); // ⬅️ Atualiza em tempo real
+  // As categorias vêm do Context. Antes este componente fazia a própria
+  // requisição, duplicando a chamada já feita pelo GastosProvider.
+  const { carregarGastos, categorias } = useGastos();
 
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
   const [data, setData] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
-  const [categorias, setCategorias] = useState([]);
   const [mensagem, setMensagem] = useState("");
 
-  // Buscar categorias ao abrir o componente
-  useEffect(() => {
-    async function carregarCategorias() {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/categorias", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCategorias(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar categorias:", error);
-      }
-    }
-    carregarCategorias();
-  }, []);
-
-  // Enviar gasto para o backend
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensagem("");
 
     try {
-      const token = localStorage.getItem("token");
+      // O header Authorization já é injetado pelo interceptor do api.jsx.
+      await api.post("/gastos", {
+        descricao,
+        valor,
+        data,
+        categoria_id: categoriaId,
+      });
 
-      await api.post(
-        "/gastos",
-        {
-          descricao,
-          valor,
-          data,
-          categoria_id: categoriaId,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      // 🔥 Atualiza tudo em tempo real
+      
       await carregarGastos();
 
       setMensagem("✅ Gasto adicionado com sucesso!");

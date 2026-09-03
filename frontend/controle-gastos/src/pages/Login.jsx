@@ -1,32 +1,28 @@
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import axios from "axios";
+import api from "../services/api";
 import { useState } from "react";
-import { Navigate, Router, useNavigate } from "react-router-dom";
-import Controle from './Controle';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState(""); // 1. Estado para o erro
-  const navigate = useNavigate();
+  const [erro, setErro] = useState(""); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErro(""); // Limpa erros antigos
+    setErro(""); 
 
     try {
-      const response = await axios.post("http://localhost:8000/api/login", {
+      const response = await api.post("/login", {
         email: email,
         password: senha,
       });
 
       localStorage.setItem("token", response.data.token);
 
-      console.log("Token recebido:", response.data);
-      navigate("/Controle");
+      // Recarrega para que os Contexts, que só buscam dados com token
+      // presente, montem já autenticados.
+      window.location.href = "/controle";
 
-      // Se chegou aqui, o login deu certo
-      
     } catch (error) {
       const mensagemErro = error.response?.data?.message || "Email ou senha incorretos.";
       setErro(mensagemErro);

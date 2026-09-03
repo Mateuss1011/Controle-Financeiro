@@ -20,8 +20,7 @@ export default function SalarioMensal() {
 
       setMensagem("✅ Salário atualizado com sucesso!");
 
-      // opcional: limpar no front (mas aqui nem é necessário)
-      // setValor("");
+      
 
     } catch (error) {
       console.error("Erro ao atualizar salário:", error);

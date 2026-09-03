@@ -23,13 +23,13 @@ export default function Lancamentos() {
   const [showModal, setShowModal] = useState(false);
   const [gastoEdit, setGastoEdit] = useState(null);
 
-  // Abrir modal de edição
+  
   const handleEdit = (gasto) => {
     setGastoEdit(gasto);
     setShowModal(true);
   };
 
-  // Salvar edição
+ 
   const handleSave = async () => {
     try {
       await atualizarGasto(gastoEdit);
@@ -39,7 +39,7 @@ export default function Lancamentos() {
     }
   };
 
-  // Deletar lançamento
+  
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este gasto?")) {
       try {
@@ -50,7 +50,7 @@ export default function Lancamentos() {
     }
   };
 
-  // Filtro por categoria
+  
   const gastosFiltrados =
     filtroCategoria === "todos"
       ? gastos
@@ -104,7 +104,7 @@ export default function Lancamentos() {
                     R$ {parseFloat(gasto.valor).toFixed(2).replace(".", ",")}
                   </td>
                   <td>
-                    {new Date(gasto.data).toLocaleDateString("pt-BR")}
+                    {new Date(gasto.data_lancamento + "T00:00:00").toLocaleDateString("pt-BR")}
                   </td>
                   <td>
                     <Badge bg="secondary">
@@ -182,11 +182,11 @@ export default function Lancamentos() {
                 <Form.Label>Data</Form.Label>
                 <Form.Control
                   type="date"
-                  value={gastoEdit.data}
+                  value={gastoEdit.data_lancamento}
                   onChange={(e) =>
                     setGastoEdit({
                       ...gastoEdit,
-                      data: e.target.value,
+                      data_lancamento: e.target.value,
                     })
                   }
                 />

@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import "@fontsource/poppins"; // padrão 400
-import "@fontsource/poppins/700.css"; // negrito
+import "@fontsource/poppins"; 
+import "@fontsource/poppins/700.css"; 
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(

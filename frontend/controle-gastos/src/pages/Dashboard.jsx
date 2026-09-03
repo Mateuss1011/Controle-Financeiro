@@ -15,16 +15,17 @@ export default function Dashboard() {
     const carregarDados = async () => {
       try {
         const [salarioRes, gastosRes] = await Promise.all([
-          api.get("/salarios"),
+          api.get("/rendas"),
           api.get("/gastos"),
         ]);
 
-        const salarios = salarioRes.data.data || salarioRes.data;
-        const salarioMaisRecente = parseFloat(salarios.at(-1)?.valor || 0);
-        setSalario(salarioMaisRecente);
+        // A listagem vem ordenada da competência mais recente para a mais
+        // antiga: o índice 0 é a renda atual. O `.at(-1)` anterior pegava
+        // justamente a mais ANTIGA, divergindo da tela de Controle.
+        const rendas = salarioRes.data.data;
+        setSalario(parseFloat(rendas[0]?.valor ?? 0));
 
-        const gastosLista = gastosRes.data.data || gastosRes.data;
-        setGastos(gastosLista);
+        setGastos(gastosRes.data.data);
       } catch (err) {
         console.error("Erro ao carregar dados do resumo:", err);
       } finally {
@@ -73,7 +74,7 @@ export default function Dashboard() {
   
   
 
-  // ---- CÁLCULOS ----
+  
   const totalGastos = gastos.reduce((acc, g) => acc + parseFloat(g.valor), 0);
   const saldoFinal = salario - totalGastos;
   const status = saldoFinal >= 0 ? "Positivo" : "Negativo";
@@ -98,43 +99,43 @@ export default function Dashboard() {
 
   const COLORS = ["#1E90FF", "#FF6347", "#32CD32", "#FFD700", "#8A2BE2", "#999"];
 
-  // ---- EXPORTAR PDF ----
+  
   const exportarPDF = async () => {
     const elemento = document.getElementById("pdf-content");
   
     const canvas = await html2canvas(elemento, {
-      scale: 2,              // aumenta qualidade
-      useCORS: true,         // melhora importação de imagens
+      scale: 2,             
+      useCORS: true,        
       logging: false
     });
   
     const imgData = canvas.toDataURL("image/png");
   
-    // PDF A4 em modo retrato
+   
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
   
-    // imagem em proporção
+    
     const imgWidth = pageWidth - 20; // margem de 10mm cada lado
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
   
-    let posY = 20; // margem topo
+    let posY = 20; 
   
-    // HEADER PROFISSIONAL
+    
     pdf.setFontSize(14);
     pdf.text("Resumo Financeiro - Relatório", pageWidth / 2, 12, {
       align: "center",
     });
   
-    // LINHA DECORATIVA
+    
     pdf.setLineWidth(0.3);
     pdf.line(10, 15, pageWidth - 10, 15);
   
-    // CONTEÚDO
+    
     pdf.addImage(imgData, "PNG", 10, posY, imgWidth, imgHeight);
   
-    // FOOTER
+    
     pdf.setFontSize(10);
     pdf.text(
       `Gerado automaticamente em ${new Date().toLocaleDateString("pt-BR")}`,

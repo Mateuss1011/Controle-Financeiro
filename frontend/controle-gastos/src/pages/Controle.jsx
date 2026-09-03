@@ -11,7 +11,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const handleVoltar = () => {
-    navigate("/"); // volta pra tela de login
+    navigate("/"); 
   };
 
   return (
