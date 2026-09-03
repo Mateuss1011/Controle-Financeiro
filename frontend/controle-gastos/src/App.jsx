@@ -1,10 +1,13 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Controle from "./pages/Controle";
-import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import { SalarioProvider } from "./Context/SalarioProvider";
-import { GastosProvider } from "./Context/GastosProvider";
+import NaoEncontrada from "./pages/NaoEncontrada";
+import AuthProvider from "./features/auth/AuthProvider";
+import CadastroPage from "./features/auth/CadastroPage";
+import LoginPage from "./features/auth/LoginPage";
+import RotaProtegida from "./features/auth/RotaProtegida";
+import RotaPublica from "./features/auth/RotaPublica";
 import { ToastProvider } from "./components/ui";
 import Spinner from "./components/ui/Spinner";
 
@@ -14,30 +17,47 @@ const DesignSystem = import.meta.env.DEV
   ? lazy(() => import("./pages/DesignSystem"))
   : null;
 
+/*
+ * Duas árvores de rotas:
+ *
+ *   RotaPublica   — login e cadastro; quem já está autenticado é mandado adiante
+ *   RotaProtegida — tudo que toca dinheiro; monta a casca de navegação e só
+ *                   então os providers financeiros
+ *
+ * O ToastProvider fica acima de tudo para que o aviso de "você saiu da conta"
+ * sobreviva à troca de rota que acontece no mesmo instante.
+ */
 export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
-        <SalarioProvider>
-          <GastosProvider>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/controle" element={<Controle />} />
+        <AuthProvider>
+          <Routes>
+            <Route element={<RotaPublica />}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/cadastro" element={<CadastroPage />} />
+            </Route>
+
+            <Route element={<RotaProtegida />}>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/controle" element={<Controle />} />
 
               {DesignSystem && (
                 <Route
                   path="/design-system"
                   element={
-                    <Suspense fallback={<div style={{ padding: "2rem" }}><Spinner /></div>}>
+                    <Suspense fallback={<Spinner />}>
                       <DesignSystem />
                     </Suspense>
                   }
                 />
               )}
-            </Routes>
-          </GastosProvider>
-        </SalarioProvider>
+
+              <Route path="*" element={<NaoEncontrada />} />
+            </Route>
+          </Routes>
+        </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
   );

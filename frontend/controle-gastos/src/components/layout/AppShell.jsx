@@ -50,18 +50,26 @@ export default function AppShell({
         </div>
 
         <nav className="cf-sidebar__nav" aria-label="Navegação principal">
-          {NAVEGACAO.map(({ para, rotulo, icone: Icone }) => (
-            <NavLink
-              key={para}
-              to={para}
-              className={({ isActive }) =>
-                `cf-navitem ${isActive ? "cf-navitem--ativo" : ""}`
-              }
-            >
-              <Icone className="cf-navitem__icone" aria-hidden="true" />
-              <span>{rotulo}</span>
-            </NavLink>
-          ))}
+          {NAVEGACAO.map(({ para, rotulo, icone: Icone, disponivel }) =>
+            disponivel ? (
+              <NavLink
+                key={para}
+                to={para}
+                className={({ isActive }) =>
+                  `cf-navitem ${isActive ? "cf-navitem--ativo" : ""}`
+                }
+              >
+                <Icone className="cf-navitem__icone" aria-hidden="true" />
+                <span>{rotulo}</span>
+              </NavLink>
+            ) : (
+              <span key={para} className="cf-navitem cf-navitem--indisponivel">
+                <Icone className="cf-navitem__icone" aria-hidden="true" />
+                <span>{rotulo}</span>
+                <span className="cf-navitem__breve">em breve</span>
+              </span>
+            )
+          )}
         </nav>
 
         <div className="cf-sidebar__rodape">
@@ -105,18 +113,29 @@ export default function AppShell({
 
       {/* ------------------------------------------ Navegação inferior (mobile) */}
       <nav className="cf-navbottom" aria-label="Navegação principal">
-        {NAVEGACAO_MOBILE.map(({ para, rotulo, icone: Icone }) => (
-          <NavLink
-            key={para}
-            to={para}
-            className={({ isActive }) =>
-              `cf-navbottom__item ${isActive ? "cf-navbottom__item--ativo" : ""}`
-            }
-          >
-            <Icone aria-hidden="true" />
-            <span>{rotulo}</span>
-          </NavLink>
-        ))}
+        {NAVEGACAO_MOBILE.map(({ para, rotulo, icone: Icone, disponivel }) =>
+          disponivel ? (
+            <NavLink
+              key={para}
+              to={para}
+              className={({ isActive }) =>
+                `cf-navbottom__item ${isActive ? "cf-navbottom__item--ativo" : ""}`
+              }
+            >
+              <Icone aria-hidden="true" />
+              <span>{rotulo}</span>
+            </NavLink>
+          ) : (
+            <span
+              key={para}
+              className="cf-navbottom__item cf-navbottom__item--indisponivel"
+              aria-disabled="true"
+            >
+              <Icone aria-hidden="true" />
+              <span>{rotulo}</span>
+            </span>
+          )
+        )}
       </nav>
 
       <button

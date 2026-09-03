@@ -264,3 +264,30 @@
     padding: var(--cf-esp-8);
   }
 }
+
+/* Destino ainda não construído: visível para dar noção do escopo, mas sem
+   prometer navegação que não existe. */
+.cf-navitem--indisponivel,
+.cf-navbottom__item--indisponivel {
+  color: var(--cf-texto-fraco);
+  cursor: default;
+}
+
+.cf-navitem--indisponivel:hover {
+  background: transparent;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-navitem__breve {
+  margin-left: auto;
+  padding: 1px var(--cf-esp-2);
+  font-size: 10px;
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+  background: var(--cf-ink-100);
+  border-radius: var(--cf-raio-full);
+}
+
+.cf-navbottom__item--indisponivel {
+  opacity: 0.45;
+}

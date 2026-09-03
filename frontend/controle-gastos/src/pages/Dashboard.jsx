@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
+import { Button } from "../components/ui";
+import { PageHeader } from "../components/layout";
+import {
+  formatarMoeda,
+  formatarPercentual,
+  percentualParaBarra,
+  percentualSeguro,
+} from "../lib/format";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -9,7 +16,6 @@ export default function Dashboard() {
   const [salario, setSalario] = useState(0);
   const [gastos, setGastos] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -38,7 +44,7 @@ export default function Dashboard() {
 
   if (carregando)
     return (
-      <div className="container py-4">
+      <div>
         <div className="row mb-4">
           {[1,2,3,4].map((i) => (
             <div className="col-md-3 mb-3" key={i}>
@@ -149,34 +155,32 @@ export default function Dashboard() {
   
 
   return (
-    <div id="pdf-content" className="container py-4">
+    <div id="pdf-content">
 
       {/* Cabeçalho */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <button className="btn btn-light" onClick={() => navigate("/controle")}>
-          ← Voltar pro Controle Financeiro
-        </button>
-
-        <h3 className="fw-bold">Dashboard</h3>
-
-        <button className="btn btn-dark" onClick={exportarPDF}>
-          Exportar PDF
-        </button>
-      </div>
+      <PageHeader
+        titulo="Dashboard"
+        descricao="Visão geral das suas finanças."
+        acoes={
+          <Button variante="secundario" onClick={exportarPDF}>
+            Exportar PDF
+          </Button>
+        }
+      />
 
       {/* Cards principais */}
       <div className="row mb-4">
         <div className="col-md-3">
           <div className="card p-3 shadow-sm">
             <h6>Salário</h6>
-            <h4 className="fw-bold text-primary">R$ {salario.toLocaleString()}</h4>
+            <h4 className="fw-bold text-primary">{formatarMoeda(salario)}</h4>
           </div>
         </div>
 
         <div className="col-md-3">
           <div className="card p-3 shadow-sm">
             <h6>Total de Gastos</h6>
-            <h4 className="fw-bold text-danger">R$ {totalGastos.toLocaleString()}</h4>
+            <h4 className="fw-bold text-danger">{formatarMoeda(totalGastos)}</h4>
           </div>
         </div>
 
@@ -184,7 +188,7 @@ export default function Dashboard() {
           <div className="card p-3 shadow-sm">
             <h6>Saldo Final</h6>
             <h4 className={`fw-bold ${saldoFinal >= 0 ? "text-success" : "text-danger"}`}>
-              R$ {saldoFinal.toLocaleString()}
+              {formatarMoeda(saldoFinal)}
             </h4>
           </div>
         </div>
@@ -242,10 +246,10 @@ export default function Dashboard() {
               <div className="progress my-2">
                 <div
                   className="progress-bar bg-danger"
-                  style={{ width: `${(totalGastos / necessidades) * 100}%` }}
+                  style={{ width: `${percentualParaBarra(percentualSeguro(totalGastos, necessidades))}%` }}
                 ></div>
               </div>
-              <small>R$ {necessidades.toLocaleString()}</small>
+              <small>{formatarMoeda(necessidades)}</small>
             </div>
 
             <div className="mb-3">
@@ -253,10 +257,10 @@ export default function Dashboard() {
               <div className="progress my-2">
                 <div
                   className="progress-bar bg-primary"
-                  style={{ width: `${(totalGastos / desejos) * 100}%` }}
+                  style={{ width: `${percentualParaBarra(percentualSeguro(totalGastos, desejos))}%` }}
                 ></div>
               </div>
-              <small>R$ {desejos.toLocaleString()}</small>
+              <small>{formatarMoeda(desejos)}</small>
             </div>
 
             <div className="mb-3">
@@ -264,15 +268,15 @@ export default function Dashboard() {
               <div className="progress my-2">
                 <div
                   className="progress-bar bg-success"
-                  style={{ width: `${(totalGastos / poupanca) * 100}%` }}
+                  style={{ width: `${percentualParaBarra(percentualSeguro(totalGastos, poupanca))}%` }}
                 ></div>
               </div>
-              <small>R$ {poupanca.toLocaleString()}</small>
+              <small>{formatarMoeda(poupanca)}</small>
             </div>
 
             <div className="alert alert-light mt-3">
               <strong>Total gasto:</strong>{" "}
-              {((totalGastos / salario) * 100).toFixed(1)}% do salário <br />
+              {formatarPercentual(percentualSeguro(totalGastos, salario))} do salário <br />
               {totalGastos <= salario * 0.8 ? (
                 <span className="text-success">✅ Dentro do limite recomendado</span>
               ) : (
