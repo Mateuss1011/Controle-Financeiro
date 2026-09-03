@@ -1,0 +1,30 @@
+# Dependências
+node_modules/
+/backend/vendor/
+/backend/controle-financeiro/vendor/
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Build
+dist/
+build/
+/backend/controle-financeiro/public/build/
+/backend/controle-financeiro/public/hot
+
+# IDEs
+.idea/
+.vscode/
+.fleet/
+*.iml
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs e cache
+*.log
+.phpunit.result.cache
+/backend/controle-financeiro/storage/*.key
