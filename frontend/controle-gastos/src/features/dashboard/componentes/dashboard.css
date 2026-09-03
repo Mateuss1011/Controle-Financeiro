@@ -1,0 +1,651 @@
+/* ------------------------------------------------------------------ Avisos */
+
+.cf-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-4);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-lg);
+}
+
+.cf-aviso--info    { border-left: 3px solid var(--cf-info-600); }
+.cf-aviso--atencao { border-left: 3px solid var(--cf-atencao-600); }
+
+.cf-aviso > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 18px;
+  color: var(--cf-texto-suave);
+}
+
+.cf-aviso--info > svg    { color: var(--cf-info-600); }
+.cf-aviso--atencao > svg { color: var(--cf-atencao-600); }
+
+.cf-aviso__texto { flex: 1; min-width: 0; }
+
+.cf-aviso__titulo {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-aviso__descricao {
+  margin-top: 2px;
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+/* ---------------------------------------------------------------- Variação */
+
+.cf-variacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-variacao--boa    { color: var(--cf-positivo-600); }
+.cf-variacao--ruim   { color: var(--cf-negativo-600); }
+.cf-variacao--neutra { color: var(--cf-texto-fraco); }
+
+.cf-dash__detalhe {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+/* --------------------------------------------------------------- Seletor */
+
+.cf-seletor {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cf-seletor__icone {
+  position: absolute;
+  left: var(--cf-esp-3);
+  font-size: 15px;
+  color: var(--cf-texto-fraco);
+  pointer-events: none;
+}
+
+.cf-seletor__campo {
+  min-width: 190px;
+  padding-left: var(--cf-esp-8);
+  font-weight: var(--cf-peso-medio);
+}
+
+/* -------------------------------------------------------- Saúde financeira */
+
+.cf-saude {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-5);
+}
+
+.cf-saude__nota {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--cf-raio-full);
+  border: 3px solid;
+}
+
+.cf-saude__nota--excelente { color: var(--cf-positivo-600); border-color: var(--cf-positivo-600); background: var(--cf-positivo-100); }
+.cf-saude__nota--saudavel  { color: var(--cf-positivo-600); border-color: var(--cf-positivo-600); background: var(--cf-positivo-100); }
+.cf-saude__nota--atencao   { color: #b45309;               border-color: var(--cf-atencao-600);  background: var(--cf-atencao-100); }
+.cf-saude__nota--critica   { color: #b91c1c;               border-color: var(--cf-negativo-600); background: var(--cf-negativo-100); }
+
+.cf-saude__pontuacao {
+  font-size: var(--cf-texto-3xl);
+  font-weight: var(--cf-peso-forte);
+  line-height: 1;
+}
+
+.cf-saude__escala {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  opacity: 0.7;
+}
+
+.cf-saude__texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-saude__resumo {
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+}
+
+.cf-saude__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  margin-top: var(--cf-esp-4);
+  padding: 0;
+  font-family: var(--cf-fonte);
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-brand-600);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cf-saude__toggle:hover { text-decoration: underline; }
+
+.cf-saude__indicadores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-4);
+  margin-top: var(--cf-esp-4);
+  padding-top: var(--cf-esp-4);
+  border-top: 1px solid var(--cf-borda);
+}
+
+.cf-saude__indicador-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-saude__indicador-rotulo {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-saude__indicador-pontos {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+  white-space: nowrap;
+}
+
+.cf-saude__indicador-explicacao {
+  margin-top: var(--cf-esp-2);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-saude__metodologia {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  font-style: italic;
+}
+
+.cf-saude__vazia {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-4);
+}
+
+.cf-saude__vazia > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-saude__vazia-titulo {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-saude__vazia-motivo {
+  margin-top: 2px;
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+/* ------------------------------------------------------------ Regra 50/30/20 */
+
+.cf-regra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-5);
+}
+
+.cf-regra__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-regra__identidade {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-regra__nome {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-regra__percentual-regra {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-regra__valores {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-esp-2);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-regra__limite {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-regra__saldo {
+  margin-top: var(--cf-esp-2);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-regra__saldo--estouro {
+  color: var(--cf-negativo-600);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-regra__rodape {
+  margin-top: var(--cf-esp-5);
+  padding-top: var(--cf-esp-4);
+  border-top: 1px solid var(--cf-borda);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+/* ------------------------------------------------------ Quanto posso gastar */
+
+.cf-capacidade {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.cf-capacidade__chamada {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-capacidade__unidade {
+  margin-top: -2px;
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+}
+
+.cf-capacidade__contexto {
+  margin-top: var(--cf-esp-3);
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-capacidade__indisponivel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-4);
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+}
+
+.cf-capacidade__indisponivel > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-capacidade__ressalva {
+  margin-top: var(--cf-esp-4);
+  padding-top: var(--cf-esp-3);
+  border-top: 1px solid var(--cf-borda);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+/* ------------------------------------------------------------------- Ritmo */
+
+.cf-ritmo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-3);
+  margin-top: var(--cf-esp-5);
+  padding-top: var(--cf-esp-4);
+  border-top: 1px solid var(--cf-borda);
+}
+
+.cf-ritmo__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+}
+
+.cf-ritmo__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-ritmo__mensagem {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+/* ---------------------------------------------------------------- Insights */
+
+.cf-insights {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3);
+  border-radius: var(--cf-raio-md);
+  background: var(--cf-superficie-sutil);
+}
+
+.cf-insight__icone {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 17px;
+}
+
+.cf-insight--critico     .cf-insight__icone { color: var(--cf-negativo-600); }
+.cf-insight--atencao     .cf-insight__icone { color: var(--cf-atencao-600); }
+.cf-insight--positivo    .cf-insight__icone { color: var(--cf-positivo-600); }
+.cf-insight--informativo .cf-insight__icone { color: var(--cf-info-600); }
+
+.cf-insight__titulo {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-insight__mensagem {
+  margin-top: 2px;
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+/* -------------------------------------------------------------- Categorias */
+
+.cf-categorias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-5);
+}
+
+.cf-categorias__grafico {
+  position: relative;
+}
+
+/* O total no miolo do donut evita um card só para ele. */
+.cf-categorias__centro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cf-categorias__centro-rotulo {
+  font-size: var(--cf-texto-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-categorias__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-categorias__item {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+}
+
+.cf-categorias__cor {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.cf-categorias__nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--cf-texto-sm);
+}
+
+.cf-categorias__percentual {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ Lançamentos */
+
+.cf-lancamentos {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-lancamento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-lancamento:last-child { border-bottom: 0; }
+
+.cf-lancamento__principal {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cf-lancamento__descricao {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-lancamento__meta {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-lancamento__direita {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------- Primeira sessão */
+
+.cf-primeira {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-6) var(--cf-esp-2);
+  text-align: center;
+}
+
+.cf-primeira__titulo {
+  font-size: var(--cf-texto-2xl);
+  font-weight: var(--cf-peso-forte);
+}
+
+.cf-primeira__descricao {
+  max-width: 46ch;
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+}
+
+.cf-primeira__passos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-3);
+  width: 100%;
+  max-width: 460px;
+  margin: var(--cf-esp-4) 0 var(--cf-esp-2);
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.cf-primeira__passo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3);
+  background: var(--cf-superficie-sutil);
+  border-radius: var(--cf-raio-md);
+}
+
+.cf-primeira__passo--indisponivel { opacity: 0.6; }
+
+.cf-primeira__numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-semi);
+  color: var(--cf-brand-700);
+  background: var(--cf-brand-100);
+  border-radius: var(--cf-raio-full);
+}
+
+.cf-primeira__icone {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-primeira__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cf-primeira__passo-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-primeira__passo-titulo .cf-navitem__breve { margin-left: 0; }
+
+.cf-primeira__passo-descricao {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-primeira__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--cf-esp-3);
+  margin-top: var(--cf-esp-2);
+}
+
+/* ======================================================= Ajustes de largura */
+
+/* Gráfico e lista ficam empilhados em qualquer largura.
+   Lado a lado, o card divide ~300px entre os dois dentro da grade de duas
+   colunas e os nomes de categoria truncam — a largura da viewport não diz nada
+   sobre a largura do card. Empilhado, o nome sempre cabe inteiro. */
+
+/* Em telas estreitas o cabeçalho de página empilha o seletor e o botão, que
+   passam a ocupar a largura toda para virarem alvos de toque confortáveis. */
+@media (max-width: 560px) {
+  /* Lado a lado, o seletor sobrava ~150px e cortava "setembro de 2026".
+     Empilhados, os dois controles ficam legíveis e viram alvos de toque
+     confortáveis. */
+  .cf-pagehead__acoes {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .cf-seletor { width: 100%; }
+  .cf-seletor__campo { width: 100%; min-width: 0; }
+
+  .cf-saude {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--cf-esp-4);
+  }
+
+  .cf-lancamento {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--cf-esp-2);
+  }
+
+  .cf-lancamento__direita { width: 100%; justify-content: space-between; }
+}
+
+/* Duas leituras curtas no rodapé de um indicador: comparação com o período
+   anterior e o peso sobre a renda. Empilham para não apertar em telas estreitas. */
+.cf-dash__detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
