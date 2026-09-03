@@ -2,50 +2,35 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Enums\TipoCategoria;
+use App\Models\Categoria;
 use Illuminate\Database\Seeder;
-use App\Models\Categoria; //
 
+/**
+ * Categorias globais do sistema (user_id NULL), disponíveis a todos os usuários.
+ *
+ * Idempotente: pode ser executado novamente sem duplicar as categorias que já
+ * existem no banco de desenvolvimento.
+ */
 class CategoriaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        Categoria::create([
-            'nome' => 'Alimentação (Supermercado)',
-            'tipo' => 'necessidade'
-        ]);
+        $categorias = [
+            ['Alimentação (Supermercado)',   TipoCategoria::Necessidade],
+            ['Moradia (Aluguel, Contas)',    TipoCategoria::Necessidade],
+            ['Transporte (Gasolina, App)',   TipoCategoria::Necessidade],
+            ['Lazer (Restaurante, Cinema)',  TipoCategoria::Desejo],
+            ['Delivery (iFood, etc)',        TipoCategoria::Desejo],
+            ['Investimentos',                TipoCategoria::Poupanca],
+            ['Outros',                       TipoCategoria::Necessidade],
+        ];
 
-        Categoria::create([
-            'nome' => 'Moradia (Aluguel, Contas)',
-            'tipo' => 'necessidade'
-        ]);
-
-        Categoria::create([
-            'nome' => 'Transporte (Gasolina, App)',
-            'tipo' => 'necessidade'
-        ]);
-
-        Categoria::create([
-            'nome' => 'Lazer (Restaurante, Cinema)',
-            'tipo' => 'desejo'
-        ]);
-
-        Categoria::create([
-            'nome' => 'Delivery (iFood, etc)',
-            'tipo' => 'desejo'
-        ]);
-
-        Categoria::create([
-            'nome' => 'Investimentos',
-            'tipo' => 'poupanca'
-        ]);
-
-        Categoria::create([
-            'nome' => 'Outros',
-            'tipo' => 'necessidade'
-        ]);
+        foreach ($categorias as [$nome, $tipo]) {
+            Categoria::withoutGlobalScopes()->updateOrCreate(
+                ['nome' => $nome, 'user_id' => null],
+                ['tipo' => $tipo->value],
+            );
+        }
     }
 }

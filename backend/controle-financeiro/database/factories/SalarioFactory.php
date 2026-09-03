@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,15 +10,17 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SalarioFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'valor' => $this->faker->randomFloat(2, 1000, 10000)
+            'user_id'     => User::factory(),
+            'valor'       => $this->faker->randomFloat(2, 1000, 10000),
+            'competencia' => now()->startOfMonth()->toDateString(),
         ];
+    }
+
+    public function naCompetencia(string $anoMes): static
+    {
+        return $this->state(fn () => ['competencia' => $anoMes . '-01']);
     }
 }

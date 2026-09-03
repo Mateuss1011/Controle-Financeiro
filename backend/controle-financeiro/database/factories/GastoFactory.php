@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Categoria;
-use App\Models\Salario;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,20 +11,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class GastoFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'descricao' => $this->faker->sentence(3),
-            'valor' => $this->faker->randomFloat(2, 10, 1000),
-            'data' => $this->faker->date(),
-           // 'categoria' => $this->faker->word(),//
+            'user_id'      => User::factory(),
+            'descricao'    => $this->faker->sentence(3),
+            'valor'        => $this->faker->randomFloat(2, 10, 1000),
+            'data'         => now()->toDateString(),
             'categoria_id' => Categoria::factory(),
-            'salario_id' => Salario::factory(),
+            'salario_id'   => null,
         ];
     }
 }
