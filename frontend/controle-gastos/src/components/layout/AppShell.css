@@ -1,0 +1,266 @@
+/* Base mobile-first: no celular o layout é uma coluna só. */
+
+.cf-shell {
+  min-height: 100vh;
+  background: var(--cf-fundo);
+}
+
+/* ------------------------------------------------------- Topbar (só mobile) */
+
+.cf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--cf-topbar-altura);
+  padding: 0 var(--cf-esp-4);
+  background: var(--cf-superficie);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-topbar__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  font-weight: var(--cf-peso-semi);
+}
+
+/* ----------------------------------------------------- Sidebar (só desktop) */
+
+.cf-sidebar {
+  display: none;
+}
+
+.cf-sidebar__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-5) var(--cf-esp-4);
+}
+
+.cf-sidebar__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-forte);
+  letter-spacing: 0.02em;
+  color: var(--cf-texto-invertido);
+  background: var(--cf-brand-600);
+  border-radius: var(--cf-raio-sm);
+}
+
+.cf-sidebar__nome {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-sidebar__acao {
+  padding: 0 var(--cf-esp-4) var(--cf-esp-4);
+}
+
+.cf-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 var(--cf-esp-3);
+  overflow-y: auto;
+}
+
+.cf-sidebar__rodape {
+  margin-top: auto;
+  padding: var(--cf-esp-3) var(--cf-esp-4) var(--cf-esp-4);
+  border-top: 1px solid var(--cf-borda);
+}
+
+/* --------------------------------------------------------- Item de navegação */
+
+.cf-navitem {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-2) var(--cf-esp-3);
+  border-radius: var(--cf-raio-md);
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+  text-decoration: none;
+  transition: background-color var(--cf-transicao), color var(--cf-transicao);
+}
+
+.cf-navitem:hover {
+  background: var(--cf-superficie-hover);
+  color: var(--cf-texto);
+}
+
+/* O item ativo usa fundo + cor + peso: não depende só de cor. */
+.cf-navitem--ativo {
+  background: var(--cf-brand-50);
+  color: var(--cf-brand-700);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-navitem__icone {
+  flex-shrink: 0;
+  font-size: 17px;
+}
+
+/* ---------------------------------------------------------------- Usuário */
+
+.cf-usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-usuario__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-semi);
+  color: var(--cf-brand-700);
+  background: var(--cf-brand-100);
+  border-radius: var(--cf-raio-full);
+}
+
+.cf-usuario__dados {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cf-usuario__nome {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-usuario__email {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- Conteúdo */
+
+.cf-conteudo {
+  /* Espaço para a navegação inferior e o FAB não cobrirem o fim da página. */
+  padding-bottom: calc(var(--cf-navbottom-altura) + var(--cf-esp-6));
+}
+
+.cf-conteudo__interno {
+  max-width: var(--cf-conteudo-max);
+  margin: 0 auto;
+  padding: var(--cf-esp-4);
+}
+
+/* --------------------------------------------- Navegação inferior (mobile) */
+
+.cf-navbottom {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  height: var(--cf-navbottom-altura);
+  background: var(--cf-superficie);
+  border-top: 1px solid var(--cf-borda);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.cf-navbottom__item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-fraco);
+  text-decoration: none;
+}
+
+.cf-navbottom__item svg {
+  font-size: 19px;
+}
+
+.cf-navbottom__item--ativo {
+  color: var(--cf-brand-600);
+}
+
+/* ------------------------------------------------------------------- FAB */
+
+.cf-fab {
+  position: fixed;
+  right: var(--cf-esp-4);
+  bottom: calc(var(--cf-navbottom-altura) + var(--cf-esp-4));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+  color: var(--cf-texto-invertido);
+  background: var(--cf-brand-600);
+  border: 0;
+  border-radius: var(--cf-raio-full);
+  box-shadow: var(--cf-sombra-lg);
+  cursor: pointer;
+  transition: background-color var(--cf-transicao);
+}
+
+.cf-fab:hover {
+  background: var(--cf-brand-700);
+}
+
+/* =========================================================== Desktop ≥ 900px */
+
+@media (min-width: 900px) {
+  .cf-shell {
+    display: grid;
+    grid-template-columns: var(--cf-sidebar-largura) 1fr;
+  }
+
+  .cf-sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--cf-superficie);
+    border-right: 1px solid var(--cf-borda);
+  }
+
+  /* No desktop a sidebar já cobre marca, navegação e sair. */
+  .cf-topbar,
+  .cf-navbottom,
+  .cf-fab {
+    display: none;
+  }
+
+  .cf-conteudo {
+    padding-bottom: var(--cf-esp-10);
+  }
+
+  .cf-conteudo__interno {
+    padding: var(--cf-esp-8);
+  }
+}

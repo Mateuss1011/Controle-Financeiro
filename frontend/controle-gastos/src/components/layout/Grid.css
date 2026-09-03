@@ -1,0 +1,11 @@
+.cf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--cf-grid-min), 100%), 1fr));
+  gap: var(--cf-grid-gap);
+}
+
+.cf-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-stack-gap);
+}
