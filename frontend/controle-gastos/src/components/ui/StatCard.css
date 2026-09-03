@@ -38,3 +38,11 @@
   font-size: var(--cf-texto-xs);
   color: var(--cf-texto-fraco);
 }
+
+/* Indicador que não é dinheiro (uma taxa, por exemplo) — mesmo peso visual do
+   Money para as colunas não desalinharem. */
+.cf-stat__conteudo {
+  font-size: var(--cf-texto-2xl);
+  font-weight: var(--cf-peso-semi);
+  letter-spacing: -0.01em;
+}

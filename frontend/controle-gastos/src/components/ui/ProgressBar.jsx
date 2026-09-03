@@ -13,6 +13,9 @@ export default function ProgressBar({
   valor,
   tom = "marca",
   rotulo,
+  // Quando o texto do rótulo já aparece na tela logo acima da barra, exibi-lo
+  // de novo é ruído — mas ele continua servindo de aria-label.
+  rotuloVisivel = true,
   mostrarPercentual = true,
   tamanho = "md",
 }) {
@@ -21,9 +24,12 @@ export default function ProgressBar({
 
   return (
     <div className="cf-progresso">
-      {(rotulo || mostrarPercentual) && (
+      {((rotulo && rotuloVisivel) || mostrarPercentual) && (
         <div className="cf-progresso__topo">
-          {rotulo && <span className="cf-progresso__rotulo">{rotulo}</span>}
+          {rotulo && rotuloVisivel && (
+            <span className="cf-progresso__rotulo">{rotulo}</span>
+          )}
+          {!rotuloVisivel && <span />}
           {mostrarPercentual && (
             <span className={`cf-progresso__valor cf-progresso__valor--${tom} cf-num`}>
               {formatarPercentual(percentual)}

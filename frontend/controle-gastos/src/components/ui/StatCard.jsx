@@ -7,10 +7,14 @@ import "./StatCard.css";
  *
  * Responde a uma pergunta por vez ("quanto entrou?", "quanto saiu?"). Aceita
  * `carregando` para não piscar entre esqueleto e valor.
+ *
+ * Por padrão formata `valor` como moeda. Quando o indicador não é dinheiro —
+ * uma taxa, por exemplo — passe `conteudo` com o texto já formatado.
  */
 export default function StatCard({
   rotulo,
   valor,
+  conteudo,
   tomValor = "padrao",
   detalhe,
   icone,
@@ -26,6 +30,10 @@ export default function StatCard({
 
       {carregando ? (
         <Skeleton largura="60%" altura="28px" />
+      ) : conteudo !== undefined ? (
+        <span className={`cf-stat__conteudo cf-money--${tomValor} cf-num`}>
+          {conteudo}
+        </span>
       ) : (
         <Money valor={valor} tamanho="lg" tom={tomValor} />
       )}
