@@ -1,0 +1,104 @@
+.cf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cf-esp-2);
+  border: 1px solid transparent;
+  border-radius: var(--cf-raio-md);
+  font-family: var(--cf-fonte);
+  font-weight: var(--cf-peso-medio);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--cf-transicao),
+    border-color var(--cf-transicao), color var(--cf-transicao);
+}
+
+.cf-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cf-btn--bloco {
+  width: 100%;
+}
+
+/* Tamanhos — altura mínima de 40px mantém o alvo de toque confortável. */
+.cf-btn--sm {
+  min-height: 34px;
+  padding: 0 var(--cf-esp-3);
+  font-size: var(--cf-texto-sm);
+}
+
+.cf-btn--md {
+  min-height: 40px;
+  padding: 0 var(--cf-esp-4);
+  font-size: var(--cf-texto-md);
+}
+
+.cf-btn--lg {
+  min-height: 46px;
+  padding: 0 var(--cf-esp-5);
+  font-size: var(--cf-texto-lg);
+}
+
+/* Variantes */
+.cf-btn--primario {
+  background: var(--cf-brand-600);
+  color: var(--cf-texto-invertido);
+}
+
+.cf-btn--primario:hover:not(:disabled) {
+  background: var(--cf-brand-700);
+}
+
+.cf-btn--secundario {
+  background: var(--cf-superficie);
+  border-color: var(--cf-borda-forte);
+  color: var(--cf-texto);
+}
+
+.cf-btn--secundario:hover:not(:disabled) {
+  background: var(--cf-superficie-hover);
+  border-color: var(--cf-ink-400);
+}
+
+.cf-btn--fantasma {
+  background: transparent;
+  color: var(--cf-texto-suave);
+}
+
+.cf-btn--fantasma:hover:not(:disabled) {
+  background: var(--cf-superficie-hover);
+  color: var(--cf-texto);
+}
+
+.cf-btn--perigo {
+  background: var(--cf-negativo-600);
+  color: var(--cf-texto-invertido);
+}
+
+.cf-btn--perigo:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.cf-btn__icone {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1em;
+}
+
+.cf-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cf-girar 0.6s linear infinite;
+}
+
+@keyframes cf-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

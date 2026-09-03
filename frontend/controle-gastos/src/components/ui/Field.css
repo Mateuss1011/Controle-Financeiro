@@ -1,0 +1,102 @@
+.cf-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-2);
+}
+
+.cf-campo__label {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+}
+
+.cf-campo__obrigatorio {
+  margin-left: 2px;
+  color: var(--cf-negativo-600);
+}
+
+.cf-campo__ajuda {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-campo__erro {
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-negativo-600);
+}
+
+/* A borda vermelha não é o único sinal: existe também a mensagem em texto. */
+.cf-campo--invalido .cf-input,
+.cf-campo--invalido .form-control,
+.cf-campo--invalido .form-select {
+  border-color: var(--cf-negativo-600);
+}
+
+.cf-campo--invalido .cf-input:focus,
+.cf-campo--invalido .form-control:focus,
+.cf-campo--invalido .form-select:focus {
+  box-shadow: 0 0 0 3px var(--cf-negativo-100);
+}
+
+/* ------------------------------------------------------------------ Controles */
+
+.cf-input,
+.cf-select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--cf-esp-3);
+  font-family: var(--cf-fonte);
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda-forte);
+  border-radius: var(--cf-raio-md);
+  transition: border-color var(--cf-transicao), box-shadow var(--cf-transicao);
+}
+
+.cf-input::placeholder {
+  color: var(--cf-texto-fraco);
+}
+
+.cf-input:focus,
+.cf-select:focus {
+  outline: none;
+  border-color: var(--cf-brand-500);
+  box-shadow: var(--cf-foco);
+}
+
+.cf-input:disabled,
+.cf-select:disabled {
+  background: var(--cf-superficie-sutil);
+  color: var(--cf-texto-fraco);
+  cursor: not-allowed;
+}
+
+.cf-select {
+  appearance: none;
+  padding-right: var(--cf-esp-8);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6.5 8 10l3.5-3.5'  stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--cf-esp-3) center;
+}
+
+/* Campo com prefixo fixo (R$) sem quebrar o alinhamento do número. */
+.cf-input-prefixado {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cf-input-prefixado__prefixo {
+  position: absolute;
+  left: var(--cf-esp-3);
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-fraco);
+  pointer-events: none;
+}
+
+.cf-input-prefixado .cf-input {
+  padding-left: var(--cf-esp-8);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,56 @@
+.cf-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-2);
+}
+
+.cf-progresso__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+}
+
+.cf-progresso__rotulo {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+}
+
+.cf-progresso__valor {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-progresso__trilho {
+  width: 100%;
+  overflow: hidden;
+  background: var(--cf-ink-200);
+  border-radius: var(--cf-raio-full);
+}
+
+.cf-progresso__trilho--sm { height: 4px; }
+.cf-progresso__trilho--md { height: 8px; }
+.cf-progresso__trilho--lg { height: 12px; }
+
+.cf-progresso__preenchimento {
+  height: 100%;
+  border-radius: var(--cf-raio-full);
+  transition: width 260ms ease;
+}
+
+.cf-progresso__preenchimento--marca        { background: var(--cf-brand-500); }
+.cf-progresso__preenchimento--positivo     { background: var(--cf-positivo-600); }
+.cf-progresso__preenchimento--negativo     { background: var(--cf-negativo-600); }
+.cf-progresso__preenchimento--atencao      { background: var(--cf-atencao-600); }
+.cf-progresso__preenchimento--necessidade  { background: var(--cf-necessidade); }
+.cf-progresso__preenchimento--desejo       { background: var(--cf-desejo); }
+.cf-progresso__preenchimento--poupanca     { background: var(--cf-poupanca); }
+
+.cf-progresso__valor--marca        { color: var(--cf-brand-600); }
+.cf-progresso__valor--positivo     { color: var(--cf-positivo-600); }
+.cf-progresso__valor--negativo     { color: var(--cf-negativo-600); }
+.cf-progresso__valor--atencao      { color: var(--cf-atencao-600); }
+.cf-progresso__valor--necessidade  { color: #0369a1; }
+.cf-progresso__valor--desejo       { color: #b45309; }
+.cf-progresso__valor--poupanca     { color: #047857; }

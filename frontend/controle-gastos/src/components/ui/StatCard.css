@@ -1,0 +1,40 @@
+.cf-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-2);
+  padding: var(--cf-esp-5);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-lg);
+  box-shadow: var(--cf-sombra-sm);
+}
+
+/* Uma faixa de 3px marca o indicador principal, sem recorrer a gradiente. */
+.cf-stat--destaque {
+  border-left: 3px solid var(--cf-brand-500);
+}
+
+.cf-stat__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-2);
+}
+
+.cf-stat__rotulo {
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-medio);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-suave);
+}
+
+.cf-stat__icone {
+  display: inline-flex;
+  color: var(--cf-texto-fraco);
+}
+
+.cf-stat__detalhe {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}

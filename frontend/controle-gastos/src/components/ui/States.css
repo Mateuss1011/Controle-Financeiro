@@ -1,0 +1,41 @@
+.cf-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-12) var(--cf-esp-6);
+  text-align: center;
+}
+
+.cf-estado--compacto {
+  padding: var(--cf-esp-8) var(--cf-esp-4);
+}
+
+.cf-estado__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: var(--cf-texto-xl);
+  color: var(--cf-texto-fraco);
+  background: var(--cf-ink-100);
+  border-radius: var(--cf-raio-full);
+}
+
+.cf-estado--erro .cf-estado__icone {
+  color: var(--cf-negativo-600);
+  background: var(--cf-negativo-100);
+  font-weight: var(--cf-peso-forte);
+}
+
+.cf-estado__titulo {
+  font-size: var(--cf-texto-lg);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-estado__descricao {
+  max-width: 42ch;
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+}

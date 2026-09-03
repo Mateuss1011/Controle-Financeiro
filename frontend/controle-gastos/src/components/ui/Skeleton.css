@@ -1,0 +1,22 @@
+.cf-skeleton {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--cf-ink-100) 25%,
+    var(--cf-ink-200) 37%,
+    var(--cf-ink-100) 63%
+  );
+  background-size: 400% 100%;
+  animation: cf-brilho 1.4s ease infinite;
+}
+
+.cf-skeleton-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-2);
+}
+
+@keyframes cf-brilho {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

@@ -1,0 +1,118 @@
+/*
+ * Estilos de base do produto.
+ *
+ * Carregado DEPOIS do Bootstrap para que a identidade própria prevaleça onde
+ * houver sobreposição.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cf-fundo);
+  color: var(--cf-texto);
+  font-family: var(--cf-fonte);
+  font-size: var(--cf-texto-md);
+  line-height: var(--cf-altura-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--cf-peso-semi);
+  line-height: var(--cf-altura-apertada);
+  letter-spacing: -0.01em;
+  color: var(--cf-texto);
+}
+
+p {
+  margin: 0;
+}
+
+/*
+ * Foco visível e consistente em tudo que é operável pelo teclado. O anel usa
+ * outline (e não box-shadow) para sobreviver a qualquer overflow.
+ */
+:focus-visible {
+  outline: 2px solid var(--cf-brand-500);
+  outline-offset: 2px;
+  border-radius: var(--cf-raio-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Números financeiros alinham em coluna quando tabulares. */
+.cf-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Conteúdo visível só para leitores de tela. */
+.cf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Atalho para o conteúdo principal, revelado ao receber foco. */
+.cf-pular-para-conteudo {
+  position: absolute;
+  left: var(--cf-esp-4);
+  top: -100px;
+  z-index: 100;
+  padding: var(--cf-esp-2) var(--cf-esp-4);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-md);
+  box-shadow: var(--cf-sombra-lg);
+  font-weight: var(--cf-peso-medio);
+  transition: top var(--cf-transicao);
+}
+
+.cf-pular-para-conteudo:focus {
+  top: var(--cf-esp-4);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cf-ink-300);
+  border: 3px solid transparent;
+  border-radius: var(--cf-raio-full);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cf-ink-400);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

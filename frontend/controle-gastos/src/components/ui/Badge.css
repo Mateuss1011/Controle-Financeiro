@@ -1,0 +1,29 @@
+.cf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  padding: 3px var(--cf-esp-2);
+  border-radius: var(--cf-raio-sm);
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-medio);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.cf-badge__ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.cf-badge--neutro       { background: var(--cf-ink-100);            color: var(--cf-ink-700); }
+.cf-badge--positivo     { background: var(--cf-positivo-100);       color: #047857; }
+.cf-badge--negativo     { background: var(--cf-negativo-100);       color: #b91c1c; }
+.cf-badge--atencao      { background: var(--cf-atencao-100);        color: #b45309; }
+.cf-badge--info         { background: var(--cf-info-100);           color: #0369a1; }
+.cf-badge--marca        { background: var(--cf-brand-50);           color: var(--cf-brand-700); }
+
+.cf-badge--necessidade  { background: var(--cf-necessidade-suave);  color: #0369a1; }
+.cf-badge--desejo       { background: var(--cf-desejo-suave);       color: #b45309; }
+.cf-badge--poupanca     { background: var(--cf-poupanca-suave);     color: #047857; }

@@ -1,0 +1,64 @@
+.cf-toasts {
+  position: fixed;
+  right: var(--cf-esp-4);
+  bottom: var(--cf-esp-4);
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-2);
+  max-width: min(380px, calc(100vw - var(--cf-esp-8)));
+  pointer-events: none;
+}
+
+.cf-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  background: var(--cf-ink-900);
+  color: var(--cf-texto-invertido);
+  border-radius: var(--cf-raio-md);
+  box-shadow: var(--cf-sombra-lg);
+  font-size: var(--cf-texto-md);
+  pointer-events: auto;
+  animation: cf-toast-entra 180ms ease;
+}
+
+/* Uma faixa lateral carrega o significado; o fundo permanece neutro. */
+.cf-toast--positivo { border-left: 3px solid var(--cf-positivo-600); }
+.cf-toast--negativo { border-left: 3px solid var(--cf-negativo-600); }
+.cf-toast--atencao  { border-left: 3px solid var(--cf-atencao-600); }
+
+.cf-toast__mensagem {
+  flex: 1;
+}
+
+.cf-toast__fechar {
+  flex-shrink: 0;
+  padding: 0 var(--cf-esp-1);
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--cf-ink-400);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cf-toast__fechar:hover {
+  color: var(--cf-white);
+}
+
+@keyframes cf-toast-entra {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* No celular a navegação inferior ocupa a base: o toast sobe acima dela. */
+@media (max-width: 900px) {
+  .cf-toasts {
+    right: var(--cf-esp-3);
+    left: var(--cf-esp-3);
+    bottom: calc(var(--cf-navbottom-altura) + var(--cf-esp-3));
+    max-width: none;
+  }
+}

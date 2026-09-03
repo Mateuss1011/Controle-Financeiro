@@ -1,0 +1,130 @@
+/*
+ * Design tokens do Controle Financeiro.
+ *
+ * Esta é a única fonte de verdade visual do produto. Nenhum componente deve
+ * escrever um valor de cor, espaçamento, raio ou sombra literal: tudo sai daqui.
+ *
+ * Identidade: neutros de tinta (slate) com um único acento índigo. Sem
+ * gradientes decorativos, sem sombras pesadas — a hierarquia vem de contraste,
+ * espaçamento e peso tipográfico, não de efeito.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- Cores */
+
+  /* Neutros — a espinha dorsal da interface */
+  --cf-ink-950: #0b1220;
+  --cf-ink-900: #0f172a;
+  --cf-ink-800: #1e293b;
+  --cf-ink-700: #334155;
+  --cf-ink-600: #475569;
+  --cf-ink-500: #64748b;
+  --cf-ink-400: #94a3b8;
+  --cf-ink-300: #cbd5e1;
+  --cf-ink-200: #e2e8f0;
+  --cf-ink-100: #f1f5f9;
+  --cf-ink-50: #f8fafc;
+  --cf-white: #ffffff;
+
+  /* Acento — usado só em elementos interativos e de marca */
+  --cf-brand-700: #3730a3;
+  --cf-brand-600: #4338ca;
+  --cf-brand-500: #4f46e5;
+  --cf-brand-100: #e0e7ff;
+  --cf-brand-50: #eef2ff;
+
+  /* Semânticos — significado financeiro, não decoração */
+  --cf-positivo-600: #059669;
+  --cf-positivo-100: #d1fae5;
+  --cf-negativo-600: #dc2626;
+  --cf-negativo-100: #fee2e2;
+  --cf-atencao-600: #d97706;
+  --cf-atencao-100: #fef3c7;
+  --cf-info-600: #0284c7;
+  --cf-info-100: #e0f2fe;
+
+  /* Faixas da regra 50/30/20 — cores fixas, iguais em todas as telas */
+  --cf-necessidade: #0ea5e9;
+  --cf-necessidade-suave: #e0f2fe;
+  --cf-desejo: #f59e0b;
+  --cf-desejo-suave: #fef3c7;
+  --cf-poupanca: #10b981;
+  --cf-poupanca-suave: #d1fae5;
+
+  /* Papéis semânticos de superfície e texto */
+  --cf-fundo: var(--cf-ink-50);
+  --cf-superficie: var(--cf-white);
+  --cf-superficie-sutil: var(--cf-ink-50);
+  --cf-superficie-hover: var(--cf-ink-100);
+  --cf-borda: var(--cf-ink-200);
+  --cf-borda-forte: var(--cf-ink-300);
+  --cf-texto: var(--cf-ink-900);
+  --cf-texto-suave: var(--cf-ink-600);
+  --cf-texto-fraco: var(--cf-ink-400);
+  --cf-texto-invertido: var(--cf-white);
+
+  /* ----------------------------------------------------------- Tipografia */
+
+  --cf-fonte: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+
+  --cf-texto-xs: 0.75rem;   /* 12px — rótulos, legendas */
+  --cf-texto-sm: 0.8125rem; /* 13px — texto de apoio */
+  --cf-texto-md: 0.875rem;  /* 14px — corpo padrão */
+  --cf-texto-lg: 1rem;      /* 16px — destaque em texto */
+  --cf-texto-xl: 1.25rem;   /* 20px — título de seção */
+  --cf-texto-2xl: 1.5rem;   /* 24px — título de página */
+  --cf-texto-3xl: 2rem;     /* 32px — número financeiro principal */
+
+  --cf-peso-normal: 400;
+  --cf-peso-medio: 500;
+  --cf-peso-semi: 600;
+  --cf-peso-forte: 700;
+
+  --cf-altura-apertada: 1.2;
+  --cf-altura-normal: 1.5;
+
+  /* ------------------------------------------------------------ Espaçamento */
+  /* Escala de 4px: previsível e suficiente. */
+
+  --cf-esp-1: 0.25rem;
+  --cf-esp-2: 0.5rem;
+  --cf-esp-3: 0.75rem;
+  --cf-esp-4: 1rem;
+  --cf-esp-5: 1.25rem;
+  --cf-esp-6: 1.5rem;
+  --cf-esp-8: 2rem;
+  --cf-esp-10: 2.5rem;
+  --cf-esp-12: 3rem;
+
+  /* ----------------------------------------------------------------- Bordas */
+
+  --cf-raio-sm: 6px;
+  --cf-raio-md: 10px;
+  --cf-raio-lg: 14px;
+  --cf-raio-full: 999px;
+
+  /* ---------------------------------------------------------------- Sombras */
+  /* Discretas de propósito: elevação sutil, não drama visual. */
+
+  --cf-sombra-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --cf-sombra-md: 0 1px 3px rgba(15, 23, 42, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+  --cf-sombra-lg: 0 4px 16px rgba(15, 23, 42, 0.08),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+  --cf-foco: 0 0 0 3px var(--cf-brand-100);
+
+  /* ---------------------------------------------------------------- Layout */
+
+  --cf-sidebar-largura: 240px;
+  --cf-topbar-altura: 60px;
+  --cf-navbottom-altura: 62px;
+  --cf-conteudo-max: 1200px;
+
+  --cf-transicao: 140ms ease;
+}
+
+/*
+ * Estruturado para receber tema escuro depois: basta redefinir os papéis
+ * semânticos abaixo. Não ativado nesta fase por não estar testado.
+ */

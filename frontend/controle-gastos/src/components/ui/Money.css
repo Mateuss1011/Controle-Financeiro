@@ -1,0 +1,15 @@
+.cf-money {
+  font-weight: var(--cf-peso-semi);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.cf-money--sm  { font-size: var(--cf-texto-sm); }
+.cf-money--md  { font-size: var(--cf-texto-lg); }
+.cf-money--lg  { font-size: var(--cf-texto-2xl); }
+.cf-money--xl  { font-size: var(--cf-texto-3xl); font-weight: var(--cf-peso-forte); }
+
+.cf-money--padrao   { color: var(--cf-texto); }
+.cf-money--positivo { color: var(--cf-positivo-600); }
+.cf-money--negativo { color: var(--cf-negativo-600); }
+.cf-money--suave    { color: var(--cf-texto-suave); }

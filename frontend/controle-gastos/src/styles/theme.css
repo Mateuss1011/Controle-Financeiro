@@ -1,0 +1,131 @@
+/*
+ * Ponte entre os tokens do produto e o Bootstrap 5.3.
+ *
+ * O Bootstrap e o react-bootstrap continuam no projeto (grid, Modal, Form,
+ * Table). Em vez de brigar com eles a golpe de !important, reescrevemos as
+ * variáveis CSS que o próprio Bootstrap consome: assim Modal, Table, Form e
+ * Button já nascem com a identidade do produto, sem reimplementar nada.
+ */
+
+:root {
+  --bs-body-bg: var(--cf-fundo);
+  --bs-body-color: var(--cf-texto);
+  --bs-body-font-family: var(--cf-fonte);
+  --bs-body-font-size: var(--cf-texto-md);
+  --bs-body-line-height: var(--cf-altura-normal);
+
+  --bs-border-color: var(--cf-borda);
+  --bs-border-radius: var(--cf-raio-md);
+  --bs-border-radius-sm: var(--cf-raio-sm);
+  --bs-border-radius-lg: var(--cf-raio-lg);
+
+  --bs-primary: var(--cf-brand-600);
+  --bs-primary-rgb: 67, 56, 202;
+  --bs-secondary-color: var(--cf-texto-suave);
+
+  --bs-success: var(--cf-positivo-600);
+  --bs-danger: var(--cf-negativo-600);
+  --bs-warning: var(--cf-atencao-600);
+  --bs-info: var(--cf-info-600);
+
+  --bs-link-color: var(--cf-brand-600);
+  --bs-link-hover-color: var(--cf-brand-700);
+
+  --bs-emphasis-color: var(--cf-texto);
+  --bs-secondary-bg: var(--cf-superficie-sutil);
+  --bs-tertiary-bg: var(--cf-superficie-sutil);
+}
+
+/* --------------------------------------------------------------- Formulários */
+
+.form-control,
+.form-select {
+  --bs-border-color: var(--cf-borda-forte);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto);
+  background-color: var(--cf-superficie);
+  border-radius: var(--cf-raio-md);
+  transition: border-color var(--cf-transicao), box-shadow var(--cf-transicao);
+}
+
+.form-control::placeholder {
+  color: var(--cf-texto-fraco);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--cf-brand-500);
+  box-shadow: var(--cf-foco);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--cf-superficie-sutil);
+  color: var(--cf-texto-fraco);
+}
+
+.form-label {
+  margin-bottom: var(--cf-esp-2);
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+}
+
+/* -------------------------------------------------------------------- Modal */
+
+.modal-content {
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-lg);
+  box-shadow: var(--cf-sombra-lg);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--cf-borda);
+  padding: var(--cf-esp-5) var(--cf-esp-6);
+}
+
+.modal-body {
+  padding: var(--cf-esp-6);
+}
+
+.modal-title {
+  font-size: var(--cf-texto-lg);
+  font-weight: var(--cf-peso-semi);
+}
+
+.modal-backdrop.show {
+  opacity: 0.4;
+}
+
+/* ------------------------------------------------------------------- Tabela */
+
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: var(--cf-superficie-sutil);
+  margin-bottom: 0;
+  color: var(--cf-texto);
+}
+
+.table > thead th {
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-semi);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-suave);
+  background: var(--cf-superficie-sutil);
+  border-bottom: 1px solid var(--cf-borda);
+  white-space: nowrap;
+}
+
+.table > tbody td {
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  border-bottom: 1px solid var(--cf-borda);
+  vertical-align: middle;
+}
+
+.table > tbody tr:last-child td {
+  border-bottom: 0;
+}

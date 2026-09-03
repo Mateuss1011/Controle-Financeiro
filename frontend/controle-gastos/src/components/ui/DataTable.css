@@ -1,0 +1,41 @@
+.cf-tabela__scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cf-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--cf-texto-md);
+}
+
+.cf-tabela th {
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-semi);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-suave);
+  background: var(--cf-superficie-sutil);
+  border-bottom: 1px solid var(--cf-borda);
+  white-space: nowrap;
+}
+
+.cf-tabela td {
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  border-bottom: 1px solid var(--cf-borda);
+  vertical-align: middle;
+}
+
+.cf-tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cf-tabela tbody tr:hover td {
+  background: var(--cf-superficie-sutil);
+}
+
+.cf-tabela__carregando {
+  padding: var(--cf-esp-5);
+}
