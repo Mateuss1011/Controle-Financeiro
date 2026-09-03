@@ -1,0 +1,141 @@
+.cf-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--cf-esp-5) var(--cf-esp-4);
+  background: var(--cf-fundo);
+}
+
+.cf-auth__caixa {
+  width: 100%;
+  max-width: 400px;
+}
+
+.cf-auth__marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-6);
+}
+
+.cf-auth__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-forte);
+  color: var(--cf-texto-invertido);
+  background: var(--cf-brand-600);
+  border-radius: var(--cf-raio-md);
+}
+
+.cf-auth__produto {
+  font-size: var(--cf-texto-lg);
+  font-weight: var(--cf-peso-semi);
+  letter-spacing: -0.01em;
+}
+
+.cf-auth__cartao {
+  padding: var(--cf-esp-8) var(--cf-esp-6);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-lg);
+  box-shadow: var(--cf-sombra-md);
+}
+
+.cf-auth__titulo {
+  font-size: var(--cf-texto-2xl);
+  font-weight: var(--cf-peso-forte);
+}
+
+.cf-auth__descricao {
+  margin-top: var(--cf-esp-2);
+  margin-bottom: var(--cf-esp-6);
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+}
+
+.cf-auth__rodape {
+  margin-top: var(--cf-esp-5);
+  font-size: var(--cf-texto-md);
+  color: var(--cf-texto-suave);
+  text-align: center;
+}
+
+.cf-auth__link {
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-brand-600);
+  text-decoration: none;
+}
+
+.cf-auth__link:hover {
+  text-decoration: underline;
+}
+
+/* Aviso de erro que não é de um campo específico. */
+.cf-auth__alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-5);
+  padding: var(--cf-esp-3) var(--cf-esp-4);
+  font-size: var(--cf-texto-sm);
+  color: #991b1b;
+  background: var(--cf-negativo-100);
+  border-left: 3px solid var(--cf-negativo-600);
+  border-radius: var(--cf-raio-sm);
+}
+
+.cf-auth__alerta svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Botão de mostrar/ocultar senha, dentro do próprio campo. */
+.cf-senha {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cf-senha .cf-input {
+  padding-right: var(--cf-esp-10);
+}
+
+.cf-senha__olho {
+  position: absolute;
+  right: var(--cf-esp-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--cf-texto-fraco);
+  background: none;
+  border: 0;
+  border-radius: var(--cf-raio-sm);
+  cursor: pointer;
+}
+
+.cf-senha__olho:hover {
+  color: var(--cf-texto);
+  background: var(--cf-superficie-hover);
+}
+
+/* Tela de espera enquanto a sessão é validada no boot. */
+.cf-verificando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cf-esp-3);
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--cf-texto-suave);
+  font-size: var(--cf-texto-sm);
+}
