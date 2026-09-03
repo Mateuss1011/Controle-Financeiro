@@ -1,18 +1,38 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\GastoController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\SalarioController;
+use App\Http\Controllers\GastoController;
+use App\Http\Controllers\RegraController;
+use App\Http\Controllers\RendaController;
+use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Rotas da API
+|--------------------------------------------------------------------------
+|
+| Carregadas uma única vez, pelo slot `api:` do bootstrap/app.php, com o
+| prefixo /api e o middleware group `api`. Toda rota que toca dado financeiro
+| exige auth:sanctum — não há exceção.
+|
+*/
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:autenticacao');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:autenticacao');
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
 
-Route::apiResource('categorias', CategoriaController::class);
-Route::apiResource('gastos', GastoController::class);
-Route::apiResource('salarios', SalarioController::class);
-Route::get('/regra', [SalarioController::class, 'regra']);
+    Route::apiResource('gastos', GastoController::class);
+    Route::apiResource('categorias', CategoriaController::class);
 
+    // Precisa vir antes do apiResource para não ser capturada por /rendas/{renda}.
+    Route::get('/rendas/competencia/{competencia}', [RendaController::class, 'daCompetencia']);
+    Route::apiResource('rendas', RendaController::class)
+        ->only(['index', 'store', 'show', 'destroy'])
+        ->parameters(['rendas' => 'renda']);
+
+    Route::get('/regra', RegraController::class);
+});

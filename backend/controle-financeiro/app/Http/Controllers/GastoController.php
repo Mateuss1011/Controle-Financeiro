@@ -2,71 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Gasto;
-use Illuminate\Http\Request;
-// ❗ Adiciona essa linha caso ainda não tenha o resource
+use App\Enums\TipoCategoria;
+use App\Http\Requests\StoreGastoRequest;
+use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Resources\GastoResource;
+use App\Models\Gasto;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class GastoController extends Controller
 {
-    public function index()
+    /**
+     * Listagem paginada e filtrável. Antes retornava a tabela inteira sem
+     * filtro algum, e todo o cálculo era feito no navegador.
+     */
+    public function index(Request $request): AnonymousResourceCollection
     {
+        $validado = $request->validate([
+            'competencia' => ['nullable', 'date_format:Y-m'],
+            'inicio'      => ['nullable', 'date'],
+            'fim'         => ['nullable', 'date', 'after_or_equal:inicio'],
+            'categoria_id'=> ['nullable', 'integer'],
+            'tipo'        => ['nullable', 'string', 'in:' . implode(',', TipoCategoria::valores())],
+            'busca'       => ['nullable', 'string', 'max:100'],
+            'ordenar_por' => ['nullable', 'in:data,valor,descricao'],
+            'direcao'     => ['nullable', 'in:asc,desc'],
+            'por_pagina'  => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $query = Gasto::with('categoria');
+
+        if (! empty($validado['competencia'])) {
+            [$ano, $mes] = explode('-', $validado['competencia']);
+            $query->daCompetencia((int) $ano, (int) $mes);
+        }
+
+        if (! empty($validado['inicio']) && ! empty($validado['fim'])) {
+            $query->entre($validado['inicio'], $validado['fim']);
+        }
+
+        if (! empty($validado['categoria_id'])) {
+            $query->where('categoria_id', $validado['categoria_id']);
+        }
+
+        if (! empty($validado['tipo'])) {
+            $query->whereHas('categoria', fn ($q) => $q->where('tipo', $validado['tipo']));
+        }
+
+        if (! empty($validado['busca'])) {
+            $query->where('descricao', 'like', '%' . $validado['busca'] . '%');
+        }
+
+        $query->orderBy($validado['ordenar_por'] ?? 'data', $validado['direcao'] ?? 'desc')
+            ->orderBy('id', 'desc');
 
         return GastoResource::collection(
-            Gasto::with(['categoria', 'salario'])->get()
+            $query->paginate($validado['por_pagina'] ?? 20)->withQueryString()
         );
     }
 
-    public function store(Request $request)
+    public function store(StoreGastoRequest $request): JsonResponse
     {
+        $gasto = Gasto::create($request->validated());
 
-        $validated = $request->validate([
-            'descricao' => 'required|string|max:255',
-            'valor' => 'required|numeric',
-            'data' => 'required|date',
-            'categoria_id' => 'required|exists:categorias,id',
-            'salario_id' => 'nullable|exists:salarios,id',
-        ]);
-
-
-        $gasto = Gasto::create($validated);
-
-
-        return response()->json([
-            'message' => 'Gasto adicionado com sucesso!',
-            'data' => $gasto
-        ], 201);
+        return (new GastoResource($gasto->load('categoria')))
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show($id)
+    public function show(Gasto $gasto): GastoResource
     {
-        return Gasto::with(['categoria', 'salario'])->findOrFail($id);
+        $this->authorize('view', $gasto);
+
+        return new GastoResource($gasto->load('categoria'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateGastoRequest $request, Gasto $gasto): GastoResource
     {
-        $gasto = Gasto::findOrFail($id);
+        $this->authorize('update', $gasto);
 
-        $validated = $request->validate([
-            'descricao' => 'string|max:255',
-            'valor' => 'numeric',
-            'data' => 'date',
-            'categoria_id' => 'exists:categorias,id',
-            'salario_id' => 'exists:salarios,id',
-        ]);
+        $gasto->update($request->validated());
 
-        $gasto->update($validated);
-
-        return response()->json([
-            'message' => 'Gasto atualizado com sucesso!',
-            'data' => $gasto
-        ]);
+        return new GastoResource($gasto->load('categoria'));
     }
 
-    public function destroy($id)
+    public function destroy(Gasto $gasto): JsonResponse
     {
-        Gasto::destroy($id);
+        $this->authorize('delete', $gasto);
 
-        return response()->json(['message' => 'Gasto deletado com sucesso.']);
+        $gasto->delete();
+
+        return response()->json(['message' => 'Lançamento excluído com sucesso.']);
     }
 }

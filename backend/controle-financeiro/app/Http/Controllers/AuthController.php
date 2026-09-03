@@ -2,59 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
-
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $token = $user->createToken('token')->plainTextToken;
+        $user = User::create($request->validated());
 
         return response()->json([
-            'user'  => $user,
-            'token' => $token,
+            'user'  => new UserResource($user),
+            'token' => $user->createToken('api')->plainTextToken,
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email'    => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $user = User::where('email', $request->validated('email'))->first();
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        // Mensagem propositalmente genérica: não revela se o e-mail existe.
+        if (! $user || ! Hash::check($request->validated('password'), $user->password)) {
             return response()->json(['message' => 'Credenciais inválidas.'], 401);
         }
 
-        $token = $user->createToken('token')->plainTextToken;
-
         return response()->json([
-            'user'  => $user,
-            'token' => $token,
+            'user'  => new UserResource($user),
+            'token' => $user->createToken('api')->plainTextToken,
         ]);
     }
 
-    public function logout(Request $request)
+    /** Revoga apenas o token da sessão atual, não todos os dispositivos. */
+    public function logout(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout realizado com sucesso.']);
+    }
+
+    public function me(Request $request): UserResource
+    {
+        return new UserResource($request->user());
     }
 }
