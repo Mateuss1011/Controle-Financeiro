@@ -9,7 +9,7 @@ import {
   Col,
 } from "react-bootstrap";
 import { FaTrash, FaEdit } from "react-icons/fa";
-import { useGastos } from "../Context/GastosContext";
+import { useGastos } from "../Context/gastosContext";
 
 export default function Lancamentos() {
   const {

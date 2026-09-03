@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSalario } from "../Context/useSalario";
+import { useSalario } from "../Context/salarioContext";
 
 export default function Regra() {
   const { salario } = useSalario(); 

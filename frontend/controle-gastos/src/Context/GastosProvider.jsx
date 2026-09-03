@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
-
-export const GastosContext = createContext();
+import { GastosContext } from "./gastosContext";
 
 export function GastosProvider({ children }) {
   const [gastos, setGastos] = useState([]);
@@ -63,8 +62,4 @@ export function GastosProvider({ children }) {
       {children}
     </GastosContext.Provider>
   );
-}
-
-export function useGastos() {
-  return useContext(GastosContext);
 }

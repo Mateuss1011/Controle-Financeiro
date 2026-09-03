@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useSalario } from "../Context/useSalario";
+import { useSalario } from "../Context/salarioContext";
 
 export default function SalarioMensal() {
   const { salario, salarioId, atualizarSalario } = useSalario();

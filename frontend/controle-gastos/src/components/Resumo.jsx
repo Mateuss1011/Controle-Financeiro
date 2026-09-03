@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSalario } from "../Context/useSalario";
-import { useGastos } from "../Context/GastosContext";
+import { useSalario } from "../Context/salarioContext";
+import { useGastos } from "../Context/gastosContext";
 
 export default function Resumo() {
   const { salario } = useSalario();

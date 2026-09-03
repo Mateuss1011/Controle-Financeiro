@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import api from "../services/api";
 import { Button, Form } from "react-bootstrap";
-import { useGastos } from "../Context/GastosContext";
+import { useGastos } from "../Context/gastosContext";
 
 export default function AdicionarGasto() {
   // As categorias vêm do Context. Antes este componente fazia a própria
