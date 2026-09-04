@@ -159,8 +159,10 @@
 /* --------------------------------------------------------------- Conteúdo */
 
 .cf-conteudo {
-  /* Espaço para a navegação inferior e o FAB não cobrirem o fim da página. */
-  padding-bottom: calc(var(--cf-navbottom-altura) + var(--cf-esp-6));
+  /* Espaço para a navegação inferior E o botão flutuante não cobrirem o fim da
+     página: o FAB tem 52px e fica a esp-4 acima da barra, então o conteúdo
+     precisa liberar essa altura inteira. */
+  padding-bottom: calc(var(--cf-navbottom-altura) + 52px + var(--cf-esp-6));
 }
 
 .cf-conteudo__interno {

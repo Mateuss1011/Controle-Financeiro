@@ -16,6 +16,7 @@ export default function Modal({
   children,
   rotuloConfirmar = "Salvar",
   onConfirmar,
+  confirmarDesabilitado = false,
   confirmando = false,
   varianteConfirmar = "primario",
   tamanho,
@@ -51,6 +52,7 @@ export default function Modal({
             variante={varianteConfirmar}
             onClick={onConfirmar}
             carregando={confirmando}
+            disabled={confirmarDesabilitado}
           >
             {rotuloConfirmar}
           </Button>

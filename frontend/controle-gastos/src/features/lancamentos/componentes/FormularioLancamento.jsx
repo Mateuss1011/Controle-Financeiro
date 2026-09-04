@@ -98,7 +98,8 @@ export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo 
       onFechar={onFechar}
       titulo={editando ? "Editar lançamento" : "Novo lançamento"}
       rotuloConfirmar={editando ? "Salvar alterações" : "Adicionar"}
-      onConfirmar={podeSalvar ? salvar : undefined}
+      onConfirmar={salvar}
+      confirmarDesabilitado={!podeSalvar}
       confirmando={salvando}
     >
       <Stack>
