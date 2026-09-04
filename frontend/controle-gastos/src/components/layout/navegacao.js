@@ -1,5 +1,5 @@
 import {
-  FiGrid, FiList, FiPieChart, FiTarget, FiFileText, FiTag, FiSettings,
+  FiGrid, FiList, FiDollarSign, FiPieChart, FiTarget, FiFileText, FiTag, FiSettings,
 } from "react-icons/fi";
 
 /**
@@ -14,9 +14,10 @@ import {
  */
 export const NAVEGACAO = [
   { para: "/dashboard",     rotulo: "Dashboard",   icone: FiGrid,     principal: true, disponivel: true },
-  { para: "/controle",      rotulo: "Lançamentos", icone: FiList,     principal: true, disponivel: true },
-  { para: "/orcamento",     rotulo: "Orçamento",   icone: FiPieChart, principal: true, disponivel: false },
-  { para: "/metas",         rotulo: "Metas",       icone: FiTarget,   principal: true, disponivel: false },
+  { para: "/lancamentos",   rotulo: "Lançamentos", icone: FiList,       principal: true, disponivel: true },
+  { para: "/renda",         rotulo: "Renda",       icone: FiDollarSign, principal: true, disponivel: true },
+  { para: "/orcamento",     rotulo: "Orçamento",   icone: FiPieChart,   disponivel: false },
+  { para: "/metas",         rotulo: "Metas",       icone: FiTarget,     principal: true, disponivel: false },
   { para: "/relatorios",    rotulo: "Relatórios",  icone: FiFileText, disponivel: false },
   { para: "/categorias",    rotulo: "Categorias",  icone: FiTag,      disponivel: false },
   { para: "/configuracoes", rotulo: "Ajustes",     icone: FiSettings, disponivel: false },

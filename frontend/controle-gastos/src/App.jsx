@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Controle from "./pages/Controle";
+import Renda from "./pages/Renda";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import LancamentosPage from "./features/lancamentos/LancamentosPage";
 import NaoEncontrada from "./pages/NaoEncontrada";
 import AuthProvider from "./features/auth/AuthProvider";
 import CadastroPage from "./features/auth/CadastroPage";
@@ -41,7 +42,10 @@ export default function App() {
             <Route element={<RotaProtegida />}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/controle" element={<Controle />} />
+              <Route path="/lancamentos" element={<LancamentosPage />} />
+              <Route path="/renda" element={<Renda />} />
+              {/* Endereço antigo, preservado para quem tiver o link salvo. */}
+              <Route path="/controle" element={<Navigate to="/lancamentos" replace />} />
 
               {DesignSystem && (
                 <Route

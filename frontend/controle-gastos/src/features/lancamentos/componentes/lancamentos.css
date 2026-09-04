@@ -1,0 +1,316 @@
+/* ------------------------------------------------------------------ Filtros */
+
+.cf-lancamentos__topo {
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-4);
+  padding: var(--cf-esp-5) var(--cf-esp-5) var(--cf-esp-4);
+}
+
+.cf-filtros__busca {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cf-filtros__lupa {
+  position: absolute;
+  left: var(--cf-esp-3);
+  font-size: 15px;
+  color: var(--cf-texto-fraco);
+  pointer-events: none;
+}
+
+.cf-filtros__busca .cf-input {
+  padding-left: var(--cf-esp-8);
+}
+
+.cf-filtros__selects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cf-esp-3);
+}
+
+.cf-filtros__selects .cf-select {
+  width: auto;
+  min-width: 165px;
+  flex: 1 1 165px;
+  max-width: 260px;
+}
+
+/* --------------------------------------------------------------------- Chips */
+
+.cf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-esp-2);
+}
+
+.cf-chip {
+  padding: var(--cf-esp-2) var(--cf-esp-3);
+  font-family: var(--cf-fonte);
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+  background: var(--cf-superficie);
+  border: 1px solid var(--cf-borda-forte);
+  border-radius: var(--cf-raio-full);
+  cursor: pointer;
+  transition: background-color var(--cf-transicao), border-color var(--cf-transicao),
+    color var(--cf-transicao);
+}
+
+.cf-chip:hover {
+  background: var(--cf-superficie-hover);
+}
+
+/* O chip ativo muda fundo, borda e cor — não depende só de cor. */
+.cf-chip--ativo {
+  color: var(--cf-brand-700);
+  background: var(--cf-brand-50);
+  border-color: var(--cf-brand-500);
+}
+
+.cf-chip--necessidade.cf-chip--ativo {
+  color: #0369a1;
+  background: var(--cf-necessidade-suave);
+  border-color: var(--cf-necessidade);
+}
+
+.cf-chip--desejo.cf-chip--ativo {
+  color: #b45309;
+  background: var(--cf-desejo-suave);
+  border-color: var(--cf-desejo);
+}
+
+.cf-chip--poupanca.cf-chip--ativo {
+  color: #047857;
+  background: var(--cf-poupanca-suave);
+  border-color: var(--cf-poupanca);
+}
+
+/* -------------------------------------------------------------------- Resumo */
+
+.cf-lancamentos__resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3) var(--cf-esp-5);
+  background: var(--cf-superficie-sutil);
+  border-top: 1px solid var(--cf-borda);
+}
+
+.cf-lancamentos__contagem {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-lancamentos__aviso-exclusao {
+  margin-top: var(--cf-esp-3);
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+/* --------------------------------------------------------------------- Lista */
+
+.cf-lista__carregando {
+  padding: var(--cf-esp-5);
+}
+
+.cf-lista__grupo + .cf-lista__grupo {
+  border-top: 1px solid var(--cf-borda);
+}
+
+/* Cabeçalho do dia acompanha a rolagem: numa lista longa o usuário nunca perde
+   de vista a que data as linhas pertencem. */
+.cf-lista__dia {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-2) var(--cf-esp-5);
+  background: var(--cf-superficie-sutil);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-lista__dia-data {
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-semi);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-suave);
+}
+
+.cf-lista__itens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  /* No celular as ações ficam à ESQUERDA: à direita elas caem exatamente sob o
+     botão flutuante de "novo lançamento", que é fixo naquele canto e tornava o
+     "excluir" inalcançável em qualquer linha que parasse ali. */
+  grid-template-areas:
+    "info  valor"
+    "acoes meta";
+  align-items: center;
+  gap: var(--cf-esp-2) var(--cf-esp-3);
+  padding: var(--cf-esp-3) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-item:last-child { border-bottom: 0; }
+.cf-item:hover { background: var(--cf-superficie-sutil); }
+
+.cf-item__info {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cf-item__descricao {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-item__meta {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-item .cf-badge { grid-area: meta; justify-self: end; }
+.cf-item__valor    { grid-area: valor; justify-self: end; }
+
+.cf-item__acoes {
+  grid-area: acoes;
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--cf-esp-1);
+}
+
+.cf-item__acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 15px;
+  color: var(--cf-texto-fraco);
+  background: none;
+  border: 0;
+  border-radius: var(--cf-raio-sm);
+  cursor: pointer;
+  transition: background-color var(--cf-transicao), color var(--cf-transicao);
+}
+
+.cf-item__acao:hover {
+  color: var(--cf-texto);
+  background: var(--cf-superficie-hover);
+}
+
+.cf-item__acao--perigo:hover {
+  color: var(--cf-negativo-600);
+  background: var(--cf-negativo-100);
+}
+
+/* ---------------------------------------------------------------- Paginação */
+
+.cf-paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-4) var(--cf-esp-5);
+  border-top: 1px solid var(--cf-borda);
+}
+
+.cf-paginacao__contagem {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-paginacao__controles {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+}
+
+.cf-paginacao__pagina {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- Formulário */
+
+.cf-form__linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--cf-esp-4);
+}
+
+/* ============================================================= Telas largas */
+
+@media (min-width: 720px) {
+  /* Com espaço, cada lançamento cabe numa linha só — e no desktop não há botão
+     flutuante, então as ações voltam para a direita. */
+  .cf-item {
+    grid-template-columns: 1fr auto auto auto;
+    grid-template-areas: "info meta valor acoes";
+    gap: var(--cf-esp-4);
+  }
+
+  .cf-item .cf-badge { justify-self: start; }
+  .cf-item__valor { min-width: 110px; }
+  .cf-item__acoes { min-width: 108px; justify-content: flex-end; }
+}
+
+@media (max-width: 560px) {
+  .cf-filtros,
+  .cf-lancamentos__resumo,
+  .cf-paginacao {
+    padding-left: var(--cf-esp-4);
+    padding-right: var(--cf-esp-4);
+  }
+
+  .cf-item { padding-left: var(--cf-esp-4); padding-right: var(--cf-esp-4); }
+  .cf-lista__dia { padding-left: var(--cf-esp-4); padding-right: var(--cf-esp-4); }
+
+  .cf-filtros__selects .cf-select { max-width: none; }
+
+  .cf-form__linha { grid-template-columns: 1fr; }
+
+  .cf-paginacao { justify-content: center; }
+  .cf-paginacao__controles { width: 100%; justify-content: space-between; }
+
+  /* Os chips deslizam em vez de quebrar em duas linhas. */
+  .cf-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: var(--cf-esp-1);
+    scrollbar-width: none;
+  }
+
+  .cf-chips::-webkit-scrollbar { display: none; }
+  .cf-chip { flex-shrink: 0; }
+}

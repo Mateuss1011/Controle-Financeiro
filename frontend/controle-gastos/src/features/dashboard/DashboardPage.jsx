@@ -5,6 +5,7 @@ import { Button, ErrorState, Skeleton, useToast } from "../../components/ui";
 import { Grid, PageHeader, Stack } from "../../components/layout";
 import { useAuth } from "../auth/authContext";
 import { useDashboard } from "./useDashboard";
+import { useLancamentosGlobais } from "../lancamentos/lancamentosContext";
 import AvisoSemRenda from "./componentes/AvisoSemRenda";
 import CartaoCapacidade from "./componentes/CartaoCapacidade";
 import CartaoSaude from "./componentes/CartaoSaude";
@@ -45,9 +46,13 @@ export default function DashboardPage() {
   const [exportando, setExportando] = useState(false);
   const areaImpressa = useRef(null);
 
-  const { dados, carregando, erro, recarregar } = useDashboard(competencia);
+  // `versao` muda a cada lançamento criado, editado ou excluído em qualquer
+  // tela: o painel se atualiza sozinho depois de um "+ Novo lançamento".
+  const { abrirNovo, versao } = useLancamentosGlobais();
+  const { dados, carregando, erro, recarregar } = useDashboard(competencia, versao);
 
-  const irParaLancamentos = () => navegar("/controle");
+  const irParaLancamentos = () => navegar("/lancamentos");
+  const irParaRenda = () => navegar("/renda");
 
   /**
    * jsPDF e html2canvas só são baixados quando o usuário clica: juntos passam
@@ -153,8 +158,8 @@ export default function DashboardPage() {
       {/* Primeira sessão: nada de parede de zeros. */}
       {dados.primeira_sessao ? (
         <PrimeiraSessao
-          onAdicionarRenda={irParaLancamentos}
-          onAdicionarLancamento={irParaLancamentos}
+          onAdicionarRenda={irParaRenda}
+          onAdicionarLancamento={abrirNovo}
         />
       ) : (
         <div ref={areaImpressa}>
@@ -177,7 +182,7 @@ export default function DashboardPage() {
             {semRenda && !dados.primeira_sessao && (
               <AvisoSemRenda
                 competenciaRotulo={dados.competencia_rotulo}
-                onAdicionarRenda={irParaLancamentos}
+                onAdicionarRenda={irParaRenda}
               />
             )}
 
@@ -187,13 +192,13 @@ export default function DashboardPage() {
               <CartaoCapacidade
                 capacidade={dados.capacidade}
                 ritmo={dados.ritmo}
-                onAdicionarRenda={irParaLancamentos}
+                onAdicionarRenda={irParaRenda}
               />
               <Insights insights={dados.insights} />
             </Grid>
 
             <Grid minimo="320px" gap="var(--cf-esp-5)">
-              <CartaoSaude saude={dados.saude} onAdicionarRenda={irParaLancamentos} />
+              <CartaoSaude saude={dados.saude} onAdicionarRenda={irParaRenda} />
               <RegraCincoTrintaVinte
                 regra={dados.regra}
                 semRenda={semRenda}
@@ -210,7 +215,7 @@ export default function DashboardPage() {
               <UltimosLancamentos
                 lancamentos={dados.ultimos_lancamentos}
                 onVerTodos={irParaLancamentos}
-                onAdicionar={irParaLancamentos}
+                onAdicionar={abrirNovo}
               />
             </Grid>
           </Stack>

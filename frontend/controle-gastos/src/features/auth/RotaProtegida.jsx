@@ -2,6 +2,8 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AppShell } from "../../components/layout";
 import { Spinner, useToast } from "../../components/ui";
 import { GastosProvider } from "../../Context/GastosProvider";
+import LancamentosProvider from "../lancamentos/LancamentosProvider";
+import { useLancamentosGlobais } from "../lancamentos/lancamentosContext";
 import { SalarioProvider } from "../../Context/SalarioProvider";
 import { useAuth } from "./authContext";
 
@@ -43,14 +45,25 @@ export default function RotaProtegida() {
   return (
     <SalarioProvider>
       <GastosProvider>
-        <AppShell
-          usuario={usuario}
-          onSair={aoSair}
-          onNovoLancamento={() => navegar("/controle")}
-        >
-          <Outlet />
-        </AppShell>
+        <LancamentosProvider>
+          <Casca usuario={usuario} onSair={aoSair} />
+        </LancamentosProvider>
       </GastosProvider>
     </SalarioProvider>
+  );
+}
+
+/**
+ * Componente separado só para poder consumir o LancamentosProvider que o pai
+ * acabou de montar: "+ Novo lançamento" abre o formulário global, em qualquer
+ * tela, em vez de navegar para outra página.
+ */
+function Casca({ usuario, onSair }) {
+  const { abrirNovo } = useLancamentosGlobais();
+
+  return (
+    <AppShell usuario={usuario} onSair={onSair} onNovoLancamento={abrirNovo}>
+      <Outlet />
+    </AppShell>
   );
 }
