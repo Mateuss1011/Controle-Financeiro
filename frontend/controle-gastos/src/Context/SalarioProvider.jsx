@@ -7,7 +7,7 @@ export function SalarioProvider({ children }) {
   const [salarioId, setSalarioId] = useState(null);
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) return;
+    // Só monta dentro da RotaProtegida: não há sessão a checar aqui.
     carregarSalario();
   }, []);
 
@@ -15,7 +15,7 @@ export function SalarioProvider({ children }) {
     try {
       // O histórico vem ordenado da competência mais recente para a mais antiga.
       const response = await api.get("/rendas");
-      const rendas = response.data.data;
+      const rendas = Array.isArray(response.data?.data) ? response.data.data : [];
 
       if (rendas.length > 0) {
         setSalario(parseFloat(rendas[0].valor));

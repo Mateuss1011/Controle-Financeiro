@@ -34,6 +34,14 @@ function montar(rotaInicial = "/login") {
 beforeEach(() => {
   localStorage.clear();
   vi.clearAllMocks();
+
+  // A área protegida monta os providers financeiros, que buscam categorias,
+  // gastos e rendas. O mock responde por rota; /me é definido em cada teste.
+  api.get.mockImplementation((rota) =>
+    rota === "/me"
+      ? Promise.resolve({ data: { data: USUARIO } })
+      : Promise.resolve({ data: { data: [] } })
+  );
 });
 
 describe("LoginPage", () => {
@@ -169,7 +177,6 @@ describe("RotaProtegida", () => {
    */
   it("valida o token guardado contra /me antes de liberar a área", async () => {
     localStorage.setItem("cf.token", "tok-antigo");
-    api.get.mockResolvedValue({ data: { data: USUARIO } });
 
     montar("/dashboard");
 
@@ -179,7 +186,11 @@ describe("RotaProtegida", () => {
 
   it("derruba a sessão quando o token guardado não vale mais", async () => {
     localStorage.setItem("cf.token", "tok-expirado");
-    api.get.mockRejectedValue({ response: { status: 401, data: {}, headers: {} } });
+    api.get.mockImplementation((rota) =>
+      rota === "/me"
+        ? Promise.reject({ response: { status: 401, data: {}, headers: {} } })
+        : Promise.resolve({ data: { data: [] } })
+    );
 
     montar("/dashboard");
 

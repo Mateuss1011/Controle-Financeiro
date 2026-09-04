@@ -5,6 +5,8 @@ import { MemoryRouter } from "react-router-dom";
 import api from "../../services/api";
 import { ToastProvider } from "../../components/ui";
 import { AuthContext } from "../auth/authContext";
+import { GastosContext } from "../../Context/gastosContext";
+import LancamentosProvider from "../lancamentos/LancamentosProvider";
 import DashboardPage from "./DashboardPage";
 
 vi.mock("../../services/api", () => ({
@@ -111,7 +113,13 @@ function montar() {
         <AuthContext.Provider
           value={{ usuario: USUARIO, autenticado: true, verificandoSessao: false, entrar: vi.fn(), cadastrar: vi.fn(), sair: vi.fn() }}
         >
-          <DashboardPage />
+          <GastosContext.Provider
+            value={{ gastos: [], categorias: [], carregarGastos: vi.fn(), carregarCategorias: vi.fn(), deletarGasto: vi.fn(), atualizarGasto: vi.fn() }}
+          >
+            <LancamentosProvider>
+              <DashboardPage />
+            </LancamentosProvider>
+          </GastosContext.Provider>
         </AuthContext.Provider>
       </ToastProvider>
     </MemoryRouter>
@@ -266,9 +274,9 @@ describe("Dashboard — seleção de período", () => {
     await userEvent.selectOptions(screen.getByLabelText("Período exibido"), "2026-08");
 
     await waitFor(() => {
-      expect(api.get).toHaveBeenLastCalledWith("/dashboard", expect.objectContaining({
+      expect(api.get).toHaveBeenLastCalledWith("/dashboard", {
         params: { competencia: "2026-08" },
-      }));
+      });
     });
 
     expect(await screen.findByText("Visão de agosto de 2026")).toBeInTheDocument();

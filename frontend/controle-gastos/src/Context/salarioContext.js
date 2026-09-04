@@ -4,5 +4,11 @@ import { createContext, useContext } from "react";
 export const SalarioContext = createContext(null);
 
 export function useSalario() {
-  return useContext(SalarioContext);
+  const contexto = useContext(SalarioContext);
+
+  if (!contexto) {
+    throw new Error("useSalario precisa estar dentro de <SalarioProvider>.");
+  }
+
+  return contexto;
 }

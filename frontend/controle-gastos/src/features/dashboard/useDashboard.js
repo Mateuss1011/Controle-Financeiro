@@ -8,38 +8,48 @@ import { extrairErro } from "../../lib/erros";
  * `competencia` nula significa "deixe o servidor escolher": ele devolve o
  * período mais recente com dados. Isso evita o vaivém de pedir a lista de
  * competências, decidir no cliente e só então buscar os números.
+ *
+ * Respostas obsoletas são descartadas em vez de canceladas — ver a mesma
+ * explicação em useListaLancamentos: abortar na limpeza do efeito matava a
+ * única requisição em voo e deixava a tela vazia.
  */
-export function useDashboard(competencia) {
+export function useDashboard(competencia, versao = 0) {
   const [dados, setDados] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
-  const carregar = useCallback(async (sinal) => {
-    setCarregando(true);
-    setErro(null);
+  const carregar = useCallback(
+    async (aindaVale = () => true) => {
+      setCarregando(true);
+      setErro(null);
 
-    try {
-      const { data } = await api.get("/dashboard", {
-        params: competencia ? { competencia } : {},
-        signal: sinal,
-      });
+      try {
+        const { data } = await api.get("/dashboard", {
+          params: competencia ? { competencia } : {},
+        });
 
-      setDados(data.data);
-    } catch (error) {
-      if (error?.code === "ERR_CANCELED") return;
+        if (!aindaVale()) return;
 
-      setErro(extrairErro(error));
-    } finally {
-      setCarregando(false);
-    }
-  }, [competencia]);
+        setDados(data.data);
+      } catch (error) {
+        if (!aindaVale()) return;
+
+        setErro(extrairErro(error));
+      } finally {
+        if (aindaVale()) setCarregando(false);
+      }
+    },
+    [competencia]
+  );
 
   useEffect(() => {
-    const controlador = new AbortController();
-    carregar(controlador.signal);
+    let atual = true;
+    carregar(() => atual);
 
-    return () => controlador.abort();
-  }, [carregar]);
+    return () => {
+      atual = false;
+    };
+  }, [carregar, versao]);
 
   return { dados, carregando, erro, recarregar: () => carregar() };
 }

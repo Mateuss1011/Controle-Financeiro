@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Modal as ModalBootstrap } from "react-bootstrap";
 import Button from "./Button";
 
@@ -19,6 +20,8 @@ export default function Modal({
   varianteConfirmar = "primario",
   tamanho,
 }) {
+  const idTitulo = useId();
+
   return (
     <ModalBootstrap
       show={aberto}
@@ -26,9 +29,15 @@ export default function Modal({
       centered
       size={tamanho}
       backdrop={confirmando ? "static" : true}
+      aria-labelledby={idTitulo}
     >
       <ModalBootstrap.Header closeButton>
-        <ModalBootstrap.Title>{titulo}</ModalBootstrap.Title>
+        {/* `as="h2"` porque o Modal.Title do react-bootstrap renderiza uma div:
+            o título de um diálogo precisa ser um heading de verdade, e é ele que
+            dá nome ao diálogo via aria-labelledby. */}
+        <ModalBootstrap.Title as="h2" id={idTitulo}>
+          {titulo}
+        </ModalBootstrap.Title>
       </ModalBootstrap.Header>
 
       <ModalBootstrap.Body>{children}</ModalBootstrap.Body>

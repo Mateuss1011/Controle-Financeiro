@@ -9,7 +9,7 @@ export function GastosProvider({ children }) {
   async function carregarCategorias() {
     try {
       const response = await api.get("/categorias");
-      setCategorias(response.data.data);
+      setCategorias(Array.isArray(response.data?.data) ? response.data.data : []);
     } catch (error) {
       console.error("Erro ao carregar categorias:", error);
     }
@@ -18,7 +18,7 @@ export function GastosProvider({ children }) {
   async function carregarGastos() {
     try {
       const response = await api.get("/gastos");
-      setGastos(response.data.data);
+      setGastos(Array.isArray(response.data?.data) ? response.data.data : []);
     } catch (error) {
       console.error("Erro ao carregar gastos:", error);
     }
@@ -40,10 +40,8 @@ export function GastosProvider({ children }) {
   }
 
   useEffect(() => {
-    // A API exige autenticação: buscar sem token só produziria 401 na tela
-    // de login.
-    if (!localStorage.getItem("token")) return;
-
+    // Sem guarda de token: este provider só é montado dentro da RotaProtegida,
+    // ou seja, com usuário já confirmado.
     carregarCategorias();
     carregarGastos();
   }, []);
