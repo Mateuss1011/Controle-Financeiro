@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import api from "../services/api";
 import { GastosProvider } from "./GastosProvider";
-import { SalarioProvider } from "./SalarioProvider";
 import { useGastos } from "./gastosContext";
-import { useSalario } from "./salarioContext";
 
 vi.mock("../services/api", () => ({
   default: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
@@ -20,11 +18,6 @@ function EspiaGastos() {
   );
 }
 
-function EspiaSalario() {
-  const { salario } = useSalario();
-
-  return <span data-testid="espia">{salario}</span>;
-}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -67,19 +60,3 @@ describe("GastosProvider", () => {
   });
 });
 
-describe("SalarioProvider", () => {
-  it("carrega a renda mais recente ao montar", async () => {
-    api.get.mockResolvedValue({
-      data: { data: [{ id: 4, valor: 2086.65, competencia: "2025-12" }] },
-    });
-
-    render(
-      <SalarioProvider>
-        <EspiaSalario />
-      </SalarioProvider>
-    );
-
-    await waitFor(() => expect(screen.getByTestId("espia")).toHaveTextContent("2086.65"));
-    expect(api.get).toHaveBeenCalledWith("/rendas");
-  });
-});

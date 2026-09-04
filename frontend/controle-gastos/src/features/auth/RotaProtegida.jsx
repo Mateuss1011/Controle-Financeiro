@@ -4,7 +4,6 @@ import { Spinner, useToast } from "../../components/ui";
 import { GastosProvider } from "../../Context/GastosProvider";
 import LancamentosProvider from "../lancamentos/LancamentosProvider";
 import { useLancamentosGlobais } from "../lancamentos/lancamentosContext";
-import { SalarioProvider } from "../../Context/SalarioProvider";
 import { useAuth } from "./authContext";
 
 /**
@@ -43,13 +42,11 @@ export default function RotaProtegida() {
   };
 
   return (
-    <SalarioProvider>
-      <GastosProvider>
-        <LancamentosProvider>
-          <Casca usuario={usuario} onSair={aoSair} />
-        </LancamentosProvider>
-      </GastosProvider>
-    </SalarioProvider>
+    <GastosProvider>
+      <LancamentosProvider>
+        <Casca usuario={usuario} onSair={aoSair} />
+      </LancamentosProvider>
+    </GastosProvider>
   );
 }
 

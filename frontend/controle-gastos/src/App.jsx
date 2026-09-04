@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Renda from "./pages/Renda";
+import RendasPage from "./features/rendas/RendasPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import LancamentosPage from "./features/lancamentos/LancamentosPage";
 import NaoEncontrada from "./pages/NaoEncontrada";
@@ -43,7 +43,7 @@ export default function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/lancamentos" element={<LancamentosPage />} />
-              <Route path="/renda" element={<Renda />} />
+              <Route path="/renda" element={<RendasPage />} />
               {/* Endereço antigo, preservado para quem tiver o link salvo. */}
               <Route path="/controle" element={<Navigate to="/lancamentos" replace />} />
 

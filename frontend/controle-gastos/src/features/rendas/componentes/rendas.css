@@ -1,0 +1,99 @@
+.cf-rendas__carregando {
+  padding: var(--cf-esp-5);
+}
+
+.cf-rendas {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-renda {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "periodo numeros"
+    "acoes   acoes";
+  align-items: center;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-4) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-renda:last-child { border-bottom: 0; }
+.cf-renda:hover { background: var(--cf-superficie-sutil); }
+
+/* A competência corrente é a que está valendo nos cálculos: a faixa lateral
+   deixa isso visível antes de qualquer leitura de texto. */
+.cf-renda--atual {
+  border-left: 3px solid var(--cf-brand-500);
+  background: var(--cf-brand-50);
+}
+
+.cf-renda--atual:hover { background: var(--cf-brand-50); }
+
+.cf-renda__periodo {
+  grid-area: periodo;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-renda__competencia {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+}
+
+/* Só a inicial: `text-transform: capitalize` maiusculiza toda palavra e
+   produzia "Agosto De 2026". */
+.cf-renda__competencia::first-letter {
+  text-transform: uppercase;
+}
+
+.cf-renda__descricao {
+  width: 100%;
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-renda__numeros {
+  grid-area: numeros;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.cf-renda__sem-variacao {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-renda__acoes {
+  grid-area: acoes;
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--cf-esp-1);
+}
+
+/* ============================================================= Telas largas */
+
+@media (min-width: 700px) {
+  .cf-renda {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: "periodo numeros acoes";
+  }
+
+  .cf-renda__acoes { justify-content: flex-end; min-width: 76px; }
+}
+
+@media (max-width: 560px) {
+  .cf-renda { padding-left: var(--cf-esp-4); padding-right: var(--cf-esp-4); }
+}
