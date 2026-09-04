@@ -20,12 +20,20 @@ class RendaController extends Controller
     {
     }
 
-    /** Histórico de rendas, da competência mais recente para a mais antiga. */
-    public function index(): AnonymousResourceCollection
+    /**
+     * Histórico de rendas, da competência mais recente para a mais antiga.
+     *
+     * `data` mantém o formato já consumido pelo frontend; o contexto que a
+     * lista sozinha não conta — competência atual, média do último ano e
+     * variação mês a mês — vai em `resumo`.
+     */
+    public function index(Request $request): AnonymousResourceCollection
     {
         return RendaResource::collection(
             Salario::orderByDesc('competencia')->get()
-        );
+        )->additional([
+            'resumo' => $this->rendas->contextoDoHistorico($request->user()->id),
+        ]);
     }
 
     /**
