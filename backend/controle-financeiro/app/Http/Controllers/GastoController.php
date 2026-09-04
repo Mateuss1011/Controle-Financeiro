@@ -7,6 +7,7 @@ use App\Http\Requests\StoreGastoRequest;
 use App\Http\Requests\UpdateGastoRequest;
 use App\Http\Resources\GastoResource;
 use App\Models\Gasto;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -31,35 +32,54 @@ class GastoController extends Controller
             'por_pagina'  => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $query = Gasto::with('categoria');
+        $query = $this->comFiltros(Gasto::with('categoria'), $validado);
 
-        if (! empty($validado['competencia'])) {
-            [$ano, $mes] = explode('-', $validado['competencia']);
-            $query->daCompetencia((int) $ano, (int) $mes);
-        }
-
-        if (! empty($validado['inicio']) && ! empty($validado['fim'])) {
-            $query->entre($validado['inicio'], $validado['fim']);
-        }
-
-        if (! empty($validado['categoria_id'])) {
-            $query->where('categoria_id', $validado['categoria_id']);
-        }
-
-        if (! empty($validado['tipo'])) {
-            $query->whereHas('categoria', fn ($q) => $q->where('tipo', $validado['tipo']));
-        }
-
-        if (! empty($validado['busca'])) {
-            $query->where('descricao', 'like', '%' . $validado['busca'] . '%');
-        }
+        /*
+         * O total do RESULTADO FILTRADO, não o da página.
+         *
+         * Num app financeiro o filtro existe justamente para responder "quanto
+         * eu gastei com desejos neste mês?". Somar só os 20 itens visíveis
+         * responderia outra pergunta — e enganaria quem tem 87 lançamentos.
+         */
+        $total = (float) (clone $query)->sum('valor');
 
         $query->orderBy($validado['ordenar_por'] ?? 'data', $validado['direcao'] ?? 'desc')
             ->orderBy('id', 'desc');
 
         return GastoResource::collection(
             $query->paginate($validado['por_pagina'] ?? 20)->withQueryString()
-        );
+        )->additional([
+            'resumo' => ['total' => round($total, 2)],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filtros
+     */
+    private function comFiltros(Builder $query, array $filtros): Builder
+    {
+        if (! empty($filtros['competencia'])) {
+            [$ano, $mes] = explode('-', $filtros['competencia']);
+            $query->daCompetencia((int) $ano, (int) $mes);
+        }
+
+        if (! empty($filtros['inicio']) && ! empty($filtros['fim'])) {
+            $query->entre($filtros['inicio'], $filtros['fim']);
+        }
+
+        if (! empty($filtros['categoria_id'])) {
+            $query->where('categoria_id', $filtros['categoria_id']);
+        }
+
+        if (! empty($filtros['tipo'])) {
+            $query->whereHas('categoria', fn ($q) => $q->where('tipo', $filtros['tipo']));
+        }
+
+        if (! empty($filtros['busca'])) {
+            $query->where('descricao', 'like', '%' . $filtros['busca'] . '%');
+        }
+
+        return $query;
     }
 
     public function store(StoreGastoRequest $request): JsonResponse

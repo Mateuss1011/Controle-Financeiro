@@ -21,7 +21,13 @@ class GastoTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        $this->categoria = Categoria::factory()->create(['user_id' => null]);
+
+        // Tipo fixo de propósito: a factory sorteia o tipo, e um sorteio de
+        // "desejo" fazia o teste de filtro por tipo encontrar 2 registros em vez
+        // de 1. Fixture de teste não pode depender de sorte.
+        $this->categoria = Categoria::factory()
+            ->doTipo(TipoCategoria::Necessidade)
+            ->create(['user_id' => null]);
     }
 
     public function test_cria_gasto(): void
@@ -158,5 +164,68 @@ class GastoTest extends TestCase
 
         $resposta->assertOk()->assertJsonCount(1, 'data');
         $this->assertSame('Netflix', $resposta->json('data.0.descricao'));
+    }
+
+    /**
+     * O filtro existe para responder "quanto gastei com X". Somar só a página
+     * visível responderia outra pergunta e enganaria quem tem muitos registros.
+     */
+    public function test_listagem_devolve_o_total_do_resultado_filtrado_nao_o_da_pagina(): void
+    {
+        Gasto::factory()->count(25)->create([
+            'user_id'      => $this->user->id,
+            'categoria_id' => $this->categoria->id,
+            'valor'        => 10,
+        ]);
+
+        $resposta = $this->actingAs($this->user)->getJson('/api/gastos');
+
+        $resposta->assertOk()->assertJsonCount(20, 'data');
+        // 25 x 10, e não 20 x 10.
+        $this->assertSame(250.0, (float) $resposta->json('resumo.total'));
+    }
+
+    public function test_total_respeita_o_filtro_aplicado(): void
+    {
+        $desejo = Categoria::factory()->doTipo(TipoCategoria::Desejo)->create(['user_id' => null]);
+
+        Gasto::factory()->create([
+            'user_id' => $this->user->id, 'categoria_id' => $desejo->id, 'valor' => 300,
+        ]);
+        Gasto::factory()->create([
+            'user_id' => $this->user->id, 'categoria_id' => $this->categoria->id, 'valor' => 700,
+        ]);
+
+        $this->actingAs($this->user)->getJson('/api/gastos?tipo=desejo')
+            ->assertOk()
+            ->assertJsonPath('resumo.total', fn ($v) => (float) $v === 300.0);
+    }
+
+    public function test_total_e_zero_quando_o_filtro_nao_encontra_nada(): void
+    {
+        Gasto::factory()->create([
+            'user_id' => $this->user->id, 'categoria_id' => $this->categoria->id, 'valor' => 100,
+        ]);
+
+        $resposta = $this->actingAs($this->user)->getJson('/api/gastos?busca=inexistente');
+
+        $resposta->assertOk()->assertJsonCount(0, 'data');
+        $this->assertSame(0.0, (float) $resposta->json('resumo.total'));
+    }
+
+    public function test_total_nao_soma_gasto_de_outro_usuario(): void
+    {
+        $outro = User::factory()->create();
+
+        Gasto::factory()->create([
+            'user_id' => $this->user->id, 'categoria_id' => $this->categoria->id, 'valor' => 100,
+        ]);
+        Gasto::factory()->create([
+            'user_id' => $outro->id, 'categoria_id' => $this->categoria->id, 'valor' => 9999,
+        ]);
+
+        $this->actingAs($this->user)->getJson('/api/gastos')
+            ->assertOk()
+            ->assertJsonPath('resumo.total', fn ($v) => (float) $v === 100.0);
     }
 }
