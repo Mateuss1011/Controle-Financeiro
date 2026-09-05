@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\OrcamentoController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RegraController;
 use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\RendaController;
@@ -28,6 +29,12 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:au
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    // A própria conta. Sem {id} na URL de propósito: o alvo é sempre o dono do
+    // token, então não existe id para manipular.
+    Route::patch('/perfil', [PerfilController::class, 'update']);
+    Route::put('/perfil/senha', [PerfilController::class, 'atualizarSenha'])
+        ->middleware('throttle:autenticacao');
 
     Route::apiResource('gastos', GastoController::class);
     Route::apiResource('categorias', CategoriaController::class);
