@@ -1,13 +1,5 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import RendasPage from "./features/rendas/RendasPage";
-import AjustesPage from "./features/ajustes/AjustesPage";
-import CategoriasPage from "./features/categorias/CategoriasPage";
-import DashboardPage from "./features/dashboard/DashboardPage";
-import LancamentosPage from "./features/lancamentos/LancamentosPage";
-import MetasPage from "./features/metas/MetasPage";
-import OrcamentoPage from "./features/orcamento/OrcamentoPage";
-import RelatoriosPage from "./features/relatorios/RelatoriosPage";
 import NaoEncontrada from "./pages/NaoEncontrada";
 import AuthProvider from "./features/auth/AuthProvider";
 import CadastroPage from "./features/auth/CadastroPage";
@@ -16,6 +8,27 @@ import RotaProtegida from "./features/auth/RotaProtegida";
 import RotaPublica from "./features/auth/RotaPublica";
 import { ToastProvider } from "./components/ui";
 import Spinner from "./components/ui/Spinner";
+
+/*
+ * As telas autenticadas são carregadas SOB DEMANDA; login e cadastro, não.
+ *
+ * Quem chega sem sessão vê a tela de login, e era ela que pagava por tudo:
+ * o recharts e as suas dependências (d3, decimal.js-light, a pilha de Redux que
+ * o recharts 3 usa por dentro) somavam a maior fatia do pacote inicial, para
+ * desenhar gráficos que só existem no Dashboard e em Relatórios.
+ *
+ * Login e cadastro ficam estáticos de propósito: são a porta de entrada, e
+ * carregá-los sob demanda trocaria bytes por uma ida e volta antes do primeiro
+ * pixel — o oposto do objetivo.
+ */
+const DashboardPage = lazy(() => import("./features/dashboard/DashboardPage"));
+const LancamentosPage = lazy(() => import("./features/lancamentos/LancamentosPage"));
+const RendasPage = lazy(() => import("./features/rendas/RendasPage"));
+const OrcamentoPage = lazy(() => import("./features/orcamento/OrcamentoPage"));
+const MetasPage = lazy(() => import("./features/metas/MetasPage"));
+const RelatoriosPage = lazy(() => import("./features/relatorios/RelatoriosPage"));
+const CategoriasPage = lazy(() => import("./features/categorias/CategoriasPage"));
+const AjustesPage = lazy(() => import("./features/ajustes/AjustesPage"));
 
 // Guia vivo do Design System: só existe em desenvolvimento. O import dinâmico
 // mantém a página inteira fora do bundle de produção.

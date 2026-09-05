@@ -1,0 +1,15 @@
+.cf-carregando-tela {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cf-esp-3);
+  /* Alto o bastante para o rodapé não subir e descer a cada navegação. */
+  min-height: 60vh;
+  color: var(--cf-texto-suave);
+}
+
+.cf-carregando-tela__texto {
+  margin: 0;
+  font-size: var(--cf-texto-sm);
+}

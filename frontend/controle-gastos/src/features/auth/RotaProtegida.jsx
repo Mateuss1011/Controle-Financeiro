@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { AppShell } from "../../components/layout";
+import { AppShell, CarregandoTela } from "../../components/layout";
 import { Spinner, useToast } from "../../components/ui";
 import { GastosProvider } from "../../Context/GastosProvider";
 import LancamentosProvider from "../lancamentos/LancamentosProvider";
@@ -60,7 +61,15 @@ function Casca({ usuario, onSair }) {
 
   return (
     <AppShell usuario={usuario} onSair={onSair} onNovoLancamento={abrirNovo}>
-      <Outlet />
+      {/*
+        * O Suspense fica DENTRO da casca, e não em volta dela: enquanto o
+        * código da tela chega, a barra lateral, a navegação inferior e o botão
+        * de novo lançamento continuam na tela. Envolver a casca inteira
+        * apagaria a navegação a cada clique — pior que o carregamento em si.
+        */}
+      <Suspense fallback={<CarregandoTela />}>
+        <Outlet />
+      </Suspense>
     </AppShell>
   );
 }
