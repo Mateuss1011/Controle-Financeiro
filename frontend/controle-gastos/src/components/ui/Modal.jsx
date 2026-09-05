@@ -22,6 +22,7 @@ export default function Modal({
   tamanho,
 }) {
   const idTitulo = useId();
+  const idCorpo = useId();
 
   return (
     <ModalBootstrap
@@ -31,6 +32,11 @@ export default function Modal({
       size={tamanho}
       backdrop={confirmando ? "static" : true}
       aria-labelledby={idTitulo}
+      /* O título diz QUAL diálogo é; o corpo diz o que está em jogo. Nos
+         modais de exclusão é no corpo que mora o que se perde — e sem
+         aria-describedby um leitor de tela anuncia só "Excluir categoria" e
+         para. */
+      aria-describedby={idCorpo}
     >
       <ModalBootstrap.Header closeButton>
         {/* `as="h2"` porque o Modal.Title do react-bootstrap renderiza uma div:
@@ -41,13 +47,22 @@ export default function Modal({
         </ModalBootstrap.Title>
       </ModalBootstrap.Header>
 
-      <ModalBootstrap.Body>{children}</ModalBootstrap.Body>
+      <ModalBootstrap.Body id={idCorpo}>{children}</ModalBootstrap.Body>
 
-      {onConfirmar && (
-        <ModalBootstrap.Footer>
-          <Button variante="secundario" onClick={onFechar} disabled={confirmando}>
-            Cancelar
-          </Button>
+      {/*
+        * O rodapé é sempre renderizado, e só o botão de confirmar é condicional.
+        *
+        * Antes o rodapé inteiro dependia de `onConfirmar`, e um diálogo sem
+        * ação de confirmação perdia junto o "Cancelar" — restando só o X do
+        * canto como saída. Não é hipótese: causou bug na Fase H (formulário
+        * incompleto) e de novo na Fase J (exclusão bloqueada). Uma saída visível
+        * não pode depender de existir uma ação de entrada.
+        */}
+      <ModalBootstrap.Footer>
+        <Button variante="secundario" onClick={onFechar} disabled={confirmando}>
+          Cancelar
+        </Button>
+        {onConfirmar && (
           <Button
             variante={varianteConfirmar}
             onClick={onConfirmar}
@@ -56,8 +71,8 @@ export default function Modal({
           >
             {rotuloConfirmar}
           </Button>
-        </ModalBootstrap.Footer>
-      )}
+        )}
+      </ModalBootstrap.Footer>
     </ModalBootstrap>
   );
 }
