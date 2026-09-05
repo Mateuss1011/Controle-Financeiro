@@ -74,6 +74,19 @@ function montar() {
   );
 }
 
+/**
+ * Espera a LISTA, nao o titulo do Card.
+ *
+ * "Histórico" e o titulo do cartao e ja esta na tela durante o
+ * carregamento, com o esqueleto dentro. Esperar por ele deixa a assercao correr
+ * antes das linhas chegarem — flake que apareceu de verdade na suite de Metas.
+ */
+async function aguardarLista() {
+  await waitFor(() =>
+    expect(document.querySelector(".cf-renda")).toBeInTheDocument()
+  );
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   api.get.mockResolvedValue(resposta());
@@ -107,7 +120,7 @@ describe("Rendas — carregamento e erro", () => {
 describe("Rendas — histórico", () => {
   it("lista as competências com valor", async () => {
     const { container } = montar();
-    await screen.findByText("Histórico");
+    await aguardarLista();
 
     // O valor do mês corrente aparece também no indicador de topo, então a
     // leitura é feita dentro da lista.
@@ -121,7 +134,7 @@ describe("Rendas — histórico", () => {
   it("marca a competência atual", async () => {
     const { container } = montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
 
     expect(screen.getByText("Período atual")).toBeInTheDocument();
     expect(container.querySelectorAll(".cf-renda--atual")).toHaveLength(1);
@@ -130,7 +143,7 @@ describe("Rendas — histórico", () => {
   it("mostra a variação em relação ao mês anterior", async () => {
     const { container } = montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
 
     const variacoes = [...container.querySelectorAll(".cf-variacao")].map((e) => e.textContent);
     expect(variacoes.some((t) => t.includes("10,0%"))).toBe(true);
@@ -139,14 +152,14 @@ describe("Rendas — histórico", () => {
   it("não inventa variação para a competência mais antiga", async () => {
     const { container } = montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     expect(container.querySelectorAll(".cf-renda__sem-variacao")).toHaveLength(1);
   });
 
   it("resume renda atual, média e total de períodos", async () => {
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     expect(screen.getAllByText("R$ 5.500,00").length).toBe(2);
     expect(screen.getByText("R$ 5.250,00")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
@@ -193,7 +206,7 @@ describe("Rendas — registrar e editar", () => {
     api.post.mockResolvedValue({ data: { data: { id: 3 } } });
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(screen.getAllByRole("button", { name: /Registrar renda/ })[0]);
 
     const modal = await screen.findByRole("dialog");
@@ -214,7 +227,7 @@ describe("Rendas — registrar e editar", () => {
     api.post.mockResolvedValue({ data: { data: { id: 3 } } });
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(screen.getAllByRole("button", { name: /Registrar renda/ })[0]);
 
     const modal = await screen.findByRole("dialog");
@@ -237,7 +250,7 @@ describe("Rendas — registrar e editar", () => {
   it("avisa que a competência escolhida já tem renda e será substituída", async () => {
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(screen.getAllByRole("button", { name: /Registrar renda/ })[0]);
 
     const modal = await screen.findByRole("dialog");
@@ -248,7 +261,7 @@ describe("Rendas — registrar e editar", () => {
   it("abre a edição preenchida e trava a competência", async () => {
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(
       screen.getAllByRole("button", { name: /^Editar renda de/ })[0]
     );
@@ -269,7 +282,7 @@ describe("Rendas — registrar e editar", () => {
     });
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(screen.getAllByRole("button", { name: /Registrar renda/ })[0]);
 
     const modal = await screen.findByRole("dialog");
@@ -287,7 +300,7 @@ describe("Rendas — exclusão", () => {
     api.delete.mockResolvedValue({ data: { message: "ok" } });
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(
       screen.getAllByRole("button", { name: /^Excluir renda de/ })[0]
     );
@@ -304,7 +317,7 @@ describe("Rendas — exclusão", () => {
   it("cancelar não exclui nada", async () => {
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     await userEvent.click(
       screen.getAllByRole("button", { name: /^Excluir renda de/ })[0]
     );
@@ -320,14 +333,14 @@ describe("Rendas — consistência", () => {
   it("não renderiza NaN, Infinity nem undefined", async () => {
     const { container } = montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
     expect(container.textContent).not.toMatch(/NaN|Infinity|undefined|\[object Object\]/);
   });
 
   it("cada ação de linha tem nome acessível próprio", async () => {
     montar();
 
-    await screen.findByText("Histórico");
+    await aguardarLista();
 
     expect(screen.getAllByRole("button", { name: /^Editar renda de/ })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: /^Excluir renda de/ })).toHaveLength(2);

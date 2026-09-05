@@ -78,6 +78,19 @@ function montar() {
   );
 }
 
+/**
+ * Espera a LISTA, nao o titulo do Card.
+ *
+ * "Limites por categoria" e o titulo do cartao e ja esta na tela durante o
+ * carregamento, com o esqueleto dentro. Esperar por ele deixa a assercao correr
+ * antes das linhas chegarem — flake que apareceu de verdade na suite de Metas.
+ */
+async function aguardarLista() {
+  await waitFor(() =>
+    expect(document.querySelector(".cf-orcamento")).toBeInTheDocument()
+  );
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   api.get.mockResolvedValue(resposta());
@@ -112,7 +125,7 @@ describe("Orçamento — listagem", () => {
   it("confronta limite com o gasto de cada categoria", async () => {
     const { container } = montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     const lista = container.querySelector(".cf-orcamentos");
     expect(within(lista).getByText("Alimentação")).toBeInTheDocument();
@@ -123,7 +136,7 @@ describe("Orçamento — listagem", () => {
   it("destaca a categoria estourada com o valor excedente", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     expect(screen.getByText("Estourado")).toBeInTheDocument();
     expect(screen.getByText("R$ 50,00 acima do limite")).toBeInTheDocument();
@@ -132,7 +145,7 @@ describe("Orçamento — listagem", () => {
   it("resume total orçado, gasto e disponível", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     expect(screen.getByText("R$ 1.100,00")).toBeInTheDocument();
     expect(screen.getByText("R$ 950,00")).toBeInTheDocument();
@@ -143,7 +156,7 @@ describe("Orçamento — listagem", () => {
   it("distingue limite recorrente de exceção do mês", async () => {
     const { container } = montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     const vigencias = [...container.querySelectorAll(".cf-orcamento__vigencia")]
       .map((e) => e.textContent.trim());
@@ -156,7 +169,7 @@ describe("Orçamento — listagem", () => {
   it("não deixa a barra passar de 100%", async () => {
     const { container } = montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     const barras = [...container.querySelectorAll(".cf-progresso__preenchimento")];
     for (const barra of barras) {
@@ -190,7 +203,7 @@ describe("Orçamento — definir e editar", () => {
     api.post.mockResolvedValue({ data: { data: { id: 12 } } });
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -212,7 +225,7 @@ describe("Orçamento — definir e editar", () => {
     api.post.mockResolvedValue({ data: { data: { id: 12 } } });
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -237,7 +250,7 @@ describe("Orçamento — definir e editar", () => {
   it("avisa quando a combinação escolhida já tem limite", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -256,7 +269,7 @@ describe("Orçamento — definir e editar", () => {
   it("abre a edição preenchida e trava a categoria", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: "Editar orçamento de Alimentação" }));
 
     const modal = await screen.findByRole("dialog");
@@ -275,7 +288,7 @@ describe("Orçamento — definir e editar", () => {
     });
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -294,7 +307,7 @@ describe("Orçamento — exclusão", () => {
     api.delete.mockResolvedValue({ data: { message: "ok" } });
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: "Excluir orçamento de Alimentação" }));
 
     const modal = await screen.findByRole("dialog");
@@ -309,7 +322,7 @@ describe("Orçamento — exclusão", () => {
   it("cancelar não exclui nada", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: "Excluir orçamento de Lazer" }));
 
     const modal = await screen.findByRole("dialog");
@@ -323,7 +336,7 @@ describe("Orçamento — período e consistência", () => {
   it("refaz a busca ao trocar de competência", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     await userEvent.selectOptions(screen.getByLabelText("Período exibido"), screen.getByLabelText("Período exibido").options[0].value);
 
@@ -333,14 +346,14 @@ describe("Orçamento — período e consistência", () => {
   it("não renderiza NaN, Infinity nem undefined", async () => {
     const { container } = montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
     expect(container.textContent).not.toMatch(/NaN|Infinity|undefined|\[object Object\]/);
   });
 
   it("cada ação de linha tem nome acessível próprio", async () => {
     montar();
 
-    await screen.findByText("Limites por categoria");
+    await aguardarLista();
 
     expect(screen.getByRole("button", { name: "Editar orçamento de Alimentação" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Excluir orçamento de Lazer" })).toBeInTheDocument();

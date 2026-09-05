@@ -82,6 +82,20 @@ function montar() {
   );
 }
 
+/**
+ * Espera a LISTA, nao o titulo do Card.
+ *
+ * "Suas metas" e o titulo do cartao e ja esta na tela durante o carregamento,
+ * com o esqueleto dentro. Esperar por ele deixava a assercao correr antes das
+ * linhas chegarem: os testes que liam texto falhavam so as vezes, e o que lia
+ * `.cf-progresso__preenchimento` recebia null. Flake real, nao ruido.
+ */
+async function aguardarLista() {
+  await waitFor(() =>
+    expect(document.querySelector(".cf-meta")).toBeInTheDocument()
+  );
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   api.get.mockResolvedValue(resposta());
@@ -116,7 +130,7 @@ describe("Metas — listagem", () => {
   it("mostra progresso, quanto falta e o aporte mensal", async () => {
     const { container } = montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
 
     const lista = container.querySelector(".cf-metas");
     expect(within(lista).getByText("Viagem")).toBeInTheDocument();
@@ -129,7 +143,7 @@ describe("Metas — listagem", () => {
   it("não exibe aporte mensal para meta sem prazo", async () => {
     const { container } = montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
 
     const itens = [...container.querySelectorAll(".cf-meta")];
     const semPrazo = itens.find((i) => i.textContent.includes("Reserva de emergência"));
@@ -146,7 +160,7 @@ describe("Metas — listagem", () => {
     );
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
 
     expect(screen.getByText("Prazo vencido")).toBeInTheDocument();
     expect(screen.getByText(/o prazo já passou/)).toBeInTheDocument();
@@ -165,7 +179,7 @@ describe("Metas — listagem", () => {
     );
     const { container } = montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
 
     expect(screen.getByText("Concluída")).toBeInTheDocument();
     expect(screen.getByText(/Objetivo alcançado/)).toBeInTheDocument();
@@ -180,7 +194,7 @@ describe("Metas — listagem", () => {
     api.get.mockResolvedValue(resposta({ itens: [meta({ percentual: 180 })] }));
     const { container } = montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
 
     const barra = container.querySelector(".cf-progresso__preenchimento");
     expect(Number.parseFloat(barra.style.width)).toBeLessThanOrEqual(100);
@@ -212,7 +226,7 @@ describe("Metas — criar e editar", () => {
     api.post.mockResolvedValue({ data: { data: { id: 9 } } });
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Nova meta/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -243,7 +257,7 @@ describe("Metas — criar e editar", () => {
   it("bloqueia o envio quando o guardado passa do objetivo", async () => {
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: /Nova meta/ }));
 
     const modal = await screen.findByRole("dialog");
@@ -262,7 +276,7 @@ describe("Metas — criar e editar", () => {
     api.put.mockResolvedValue({ data: { data: { id: 1 } } });
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: "Editar meta Viagem" }));
 
     const modal = await screen.findByRole("dialog");
@@ -284,7 +298,7 @@ describe("Metas — aporte rápido", () => {
     api.put.mockResolvedValue({ data: { data: { id: 1 } } });
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(
       screen.getByRole("button", { name: "Registrar valor guardado em Viagem" })
     );
@@ -306,7 +320,7 @@ describe("Metas — aporte rápido", () => {
     api.put.mockResolvedValue({ data: { data: { id: 1 } } });
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(
       screen.getByRole("button", { name: "Registrar valor guardado em Viagem" })
     );
@@ -329,7 +343,7 @@ describe("Metas — exclusão", () => {
     api.delete.mockResolvedValue({ data: { message: "ok" } });
     montar();
 
-    await screen.findByText("Suas metas");
+    await aguardarLista();
     await userEvent.click(screen.getByRole("button", { name: "Excluir meta Viagem" }));
 
     const modal = await screen.findByRole("dialog");
