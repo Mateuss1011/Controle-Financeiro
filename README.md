@@ -10,6 +10,24 @@ metas e relatórios, com a regra 50/30/20 como espinha dorsal da análise.
 
 ---
 
+## Antes de publicar
+
+A API é segura por padrão **desde que três variáveis estejam certas**. Todas
+estão comentadas em `backend/controle-financeiro/.env.example`:
+
+| Variável | Produção | Por quê |
+|---|---|---|
+| `APP_DEBUG` | `false` | Com `true`, um erro 500 devolve a mensagem original da exceção, o caminho absoluto do arquivo no servidor e o stack trace inteiro dentro do JSON. Com `false`, a mesma falha vira `{"message": "Server Error"}`. |
+| `APP_ENV` | `production` | Desliga rotas e comportamentos de desenvolvimento. |
+| `CORS_ALLOWED_ORIGINS` | domínio do frontend | O padrão libera apenas o servidor de desenvolvimento do Vite. **Sem ajustar, o frontend em produção é bloqueado pelo navegador** e a aplicação não funciona. |
+
+Também gere a chave antes do primeiro deploy: `php artisan key:generate`.
+
+Complementos úteis, não bloqueantes: `LOG_LEVEL=warning` (o nível `debug` grava
+dados de requisição) e, em mais de uma instância, `CACHE_STORE=redis` — o
+limitador de tentativas de senha guarda o contador no cache, e com `database`
+ou `file` cada instância conta separado.
+
 ## Decisões técnicas registradas
 
 ### Unicidade de nomes de categoria — insensível a caixa e a acento
@@ -40,6 +58,23 @@ que é exatamente a variação que essa centralização existe para eliminar.
 
 A equivalência foi conferida caractere a caractere contra o próprio MariaDB: 53
 acentuados, nenhuma divergência.
+
+### Mensagens de erro da API
+
+Toda resposta de erro da API é JSON, em português, e não descreve o servidor.
+
+O padrão do Laravel para um id inexistente é
+`No query results for model [App\Models\Gasto] 999` — **e isso sai assim mesmo
+com `APP_DEBUG=false`**. Duas coisas erradas de uma vez: o namespace da classe
+interna vira informação pública, e o usuário recebe uma frase técnica em inglês.
+Um 404 é rotina (basta um link antigo), então não é um caso de canto. Rota
+inexistente e método errado devolviam `message` vazia; a negativa de Policy vinha
+como "This action is unauthorized.".
+
+Os quatro casos são tratados em `bootstrap/app.php`, sem mudar nenhum status
+code. `tests/Feature/Api/RespostasDeErroTest.php` trava o comportamento — e roda
+com `app.debug` **ligado** de propósito: se a resposta é limpa na configuração
+mais perigosa, é limpa sempre.
 
 ### Paginação de `/api/categorias` e `/api/metas` — avaliada e recusada
 
