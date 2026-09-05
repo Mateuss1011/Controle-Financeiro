@@ -3,10 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Enums\TipoCategoria;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateCategoriaRequest extends FormRequest
+/**
+ * Edição de categoria.
+ *
+ * Herda de Store apenas a regra de unicidade — a mesma pergunta ("esse nome já
+ * está visível para mim?") com uma exceção: a própria categoria editada.
+ */
+class UpdateCategoriaRequest extends StoreCategoriaRequest
 {
     public function rules(): array
     {
@@ -16,9 +21,7 @@ class UpdateCategoriaRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('categorias', 'nome')
-                    ->where('user_id', $this->user()->id)
-                    ->ignore($this->route('categoria')),
+                $this->nomeInedito()->ignore($this->route('categoria')),
             ],
             'tipo' => ['sometimes', 'required', Rule::enum(TipoCategoria::class)],
         ];
@@ -28,7 +31,8 @@ class UpdateCategoriaRequest extends FormRequest
     {
         return [
             'nome.required' => 'Informe o nome da categoria.',
-            'nome.unique'   => 'Você já tem uma categoria com esse nome.',
+            'nome.unique'   => 'Já existe uma categoria com esse nome.',
+            'nome.max'      => 'O nome deve ter no máximo 100 caracteres.',
             'tipo.required' => 'Selecione o tipo da categoria.',
             'tipo.enum'     => 'O tipo deve ser necessidade, desejo ou poupanca.',
         ];

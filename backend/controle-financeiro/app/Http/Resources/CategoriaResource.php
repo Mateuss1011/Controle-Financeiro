@@ -18,6 +18,11 @@ class CategoriaResource extends JsonResource
             'tipo'    => $this->tipo->value,
             'rotulo_tipo' => $this->tipo->rotulo(),
             'global'  => $this->ehGlobal(),
+            // Só na listagem, que é a única consulta que carrega a contagem.
+            // A tela de Categorias precisa dela para dizer, ANTES do clique, se
+            // a exclusão vai ser recusada — e o escopo global de Gasto já
+            // garante que o número é o uso de quem está pedindo.
+            'total_lancamentos' => $this->whenCounted('gastos'),
         ];
     }
 }

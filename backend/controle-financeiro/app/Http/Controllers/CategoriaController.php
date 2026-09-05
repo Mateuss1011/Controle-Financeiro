@@ -15,7 +15,7 @@ class CategoriaController extends Controller
     public function index(): AnonymousResourceCollection
     {
         return CategoriaResource::collection(
-            Categoria::orderBy('tipo')->orderBy('nome')->get()
+            Categoria::withCount('gastos')->orderBy('tipo')->orderBy('nome')->get()
         );
     }
 
@@ -49,10 +49,17 @@ class CategoriaController extends Controller
     {
         $this->authorize('delete', $categoria);
 
-        // Os gastos têm FK com onDelete cascade; avisar é melhor que apagar em silêncio.
-        if ($categoria->gastos()->exists()) {
+        // Os gastos têm FK com onDelete cascade; avisar é melhor que apagar em
+        // silêncio. O número entra na mensagem para o usuário saber o tamanho
+        // do trabalho de reclassificar antes de tentar de novo.
+        $lancamentos = $categoria->gastos()->count();
+
+        if ($lancamentos > 0) {
             return response()->json([
-                'message' => 'Esta categoria possui lançamentos e não pode ser excluída.',
+                'message' => $lancamentos === 1
+                    ? 'Esta categoria tem 1 lançamento e não pode ser excluída.'
+                    : "Esta categoria tem {$lancamentos} lançamentos e não pode ser excluída.",
+                'total_lancamentos' => $lancamentos,
             ], 422);
         }
 
