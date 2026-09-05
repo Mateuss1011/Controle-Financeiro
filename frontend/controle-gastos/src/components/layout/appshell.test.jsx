@@ -62,21 +62,29 @@ describe("AppShell — todo destino disponível é alcançável no celular", () 
     }
   });
 
+  /*
+   * Desde a Fase J não sobrou nenhum destino "em breve" — o teste continua
+   * porque a regra segue valendo para o próximo que entrar no menu: aparece,
+   * mas não vira link. A contagem de etiquetas acompanha a lista em vez de ser
+   * fixada num número, senão o teste quebraria a cada destino concluído (foi o
+   * que aconteceu quando Categorias e Ajustes ficaram prontos).
+   */
   it("marca o que ainda não existe como 'em breve', sem link", async () => {
     montar();
 
     await userEvent.click(screen.getByRole("button", { name: /Mais/ }));
 
     const painel = screen.getByRole("dialog", { name: "Mais destinos" });
+    const pendentes = NAVEGACAO_SECUNDARIA.filter((i) => !i.disponivel);
 
-    for (const item of NAVEGACAO_SECUNDARIA.filter((i) => !i.disponivel)) {
+    for (const item of pendentes) {
       expect(
         within(painel).queryByRole("link", { name: item.rotulo })
       ).not.toBeInTheDocument();
       expect(within(painel).getByText(item.rotulo)).toBeInTheDocument();
     }
 
-    expect(within(painel).getAllByText("em breve").length).toBeGreaterThan(0);
+    expect(within(painel).queryAllByText("em breve")).toHaveLength(pendentes.length);
   });
 
   it("fecha com Escape e pelo botão de fechar", async () => {

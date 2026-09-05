@@ -1,0 +1,124 @@
+.cf-categorias-tela {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-5);
+}
+
+.cf-faixa__cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+}
+
+.cf-faixa__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+}
+
+.cf-faixa__marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cf-faixa__regra {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-categoria-lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-categoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  padding: var(--cf-esp-3) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-categoria:last-child { border-bottom: 0; }
+
+.cf-categoria__identidade {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-categoria__nome {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Categoria do sistema nao e editavel: a etiqueta explica por que os botoes
+   nao aparecem, em vez de deixar a ausencia parecer um bug. */
+.cf-categoria__padrao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 1px var(--cf-esp-2);
+  font-size: 10px;
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+  background: var(--cf-ink-100);
+  border-radius: var(--cf-raio-full);
+  white-space: nowrap;
+}
+
+.cf-categoria__direita {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-3);
+  flex-shrink: 0;
+}
+
+.cf-categoria__uso {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cf-categoria__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+}
+
+.cf-categoria__vazia {
+  padding: var(--cf-esp-4) var(--cf-esp-5);
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-fraco);
+}
+
+.cf-categorias-tela__ressalva {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+@media (max-width: 560px) {
+  .cf-categoria {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--cf-esp-2);
+    padding-left: var(--cf-esp-4);
+    padding-right: var(--cf-esp-4);
+  }
+
+  .cf-categoria__direita { justify-content: space-between; }
+}

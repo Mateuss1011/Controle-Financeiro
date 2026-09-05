@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import RendasPage from "./features/rendas/RendasPage";
+import AjustesPage from "./features/ajustes/AjustesPage";
+import CategoriasPage from "./features/categorias/CategoriasPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import LancamentosPage from "./features/lancamentos/LancamentosPage";
 import MetasPage from "./features/metas/MetasPage";
@@ -50,6 +52,10 @@ export default function App() {
               <Route path="/orcamento" element={<OrcamentoPage />} />
               <Route path="/metas" element={<MetasPage />} />
               <Route path="/relatorios" element={<RelatoriosPage />} />
+              <Route path="/categorias" element={<CategoriasPage />} />
+              <Route path="/ajustes" element={<AjustesPage />} />
+              {/* Endereço antigo do menu, preservado para links salvos. */}
+              <Route path="/configuracoes" element={<Navigate to="/ajustes" replace />} />
               {/* Endereço antigo, preservado para quem tiver o link salvo. */}
               <Route path="/controle" element={<Navigate to="/lancamentos" replace />} />
 

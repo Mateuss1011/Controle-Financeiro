@@ -1,19 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
+import { extrairErro } from "../lib/erros";
 import { GastosContext } from "./gastosContext";
 
 export function GastosProvider({ children }) {
   const [gastos, setGastos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [carregandoCategorias, setCarregandoCategorias] = useState(true);
+  const [erroCategorias, setErroCategorias] = useState(null);
 
-  async function carregarCategorias() {
+  /*
+   * A lista de categorias tem UM dono, este provider.
+   *
+   * A tela de Categorias podia ter o proprio hook, mas ai a mesma lista teria
+   * duas copias: uma na tela e outra alimentando o seletor do formulario de
+   * lancamento. Renomear uma categoria numa e deixar a outra desatualizada
+   * seria questao de tempo. O preco de centralizar e este provider precisar
+   * carregar/erro proprios — que a tela consome como consumiria os seus.
+   */
+  const carregarCategorias = useCallback(async () => {
+    setCarregandoCategorias(true);
+    setErroCategorias(null);
+
     try {
       const response = await api.get("/categorias");
       setCategorias(Array.isArray(response.data?.data) ? response.data.data : []);
     } catch (error) {
-      console.error("Erro ao carregar categorias:", error);
+      setErroCategorias(extrairErro(error));
+    } finally {
+      setCarregandoCategorias(false);
     }
-  }
+  }, []);
 
   async function carregarGastos() {
     try {
@@ -44,13 +61,15 @@ export function GastosProvider({ children }) {
     // ou seja, com usuário já confirmado.
     carregarCategorias();
     carregarGastos();
-  }, []);
+  }, [carregarCategorias]);
 
   return (
     <GastosContext.Provider
       value={{
         gastos,
         categorias,
+        carregandoCategorias,
+        erroCategorias,
         carregarGastos,
         carregarCategorias,
         deletarGasto,

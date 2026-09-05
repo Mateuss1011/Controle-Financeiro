@@ -83,6 +83,17 @@ export default function AuthProvider({ children }) {
     [aplicarSessao]
   );
 
+  /**
+   * Substitui o usuário em memória depois de uma edição de perfil.
+   *
+   * Sem isto, trocar o nome em Ajustes deixava a saudação do Dashboard e o
+   * rodapé da barra lateral com o nome antigo até o próximo recarregamento —
+   * dando a impressão de que o salvamento não pegou.
+   */
+  const atualizarUsuario = useCallback((dados) => {
+    setUsuario((atual) => ({ ...atual, ...dados }));
+  }, []);
+
   const sair = useCallback(async () => {
     try {
       // Revoga o token no servidor. Se a chamada falhar (rede fora, token já
@@ -104,8 +115,9 @@ export default function AuthProvider({ children }) {
       entrar,
       cadastrar,
       sair,
+      atualizarUsuario,
     }),
-    [usuario, verificandoSessao, entrar, cadastrar, sair]
+    [usuario, verificandoSessao, entrar, cadastrar, sair, atualizarUsuario]
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
