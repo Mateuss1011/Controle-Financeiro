@@ -29,3 +29,22 @@
   flex-wrap: wrap;
   gap: var(--cf-esp-2);
 }
+
+/*
+ * No celular os controles do cabeçalho empilham: lado a lado o seletor de
+ * período sobrava ~150px e cortava "setembro de 2026".
+ *
+ * `flex-wrap: nowrap` é obrigatório aqui. Coluna + wrap monta um contêiner
+ * multicoluna, e o primeiro filho que também tenha `flex-wrap: wrap` recebe uma
+ * altura maior que o próprio conteúdo — na tela de Relatórios isso abria 65px
+ * de vão morto entre o título e os seletores, com os campos colados na base de
+ * uma caixa invisível.
+ */
+@media (max-width: 560px) {
+  .cf-pagehead__acoes {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+  }
+}

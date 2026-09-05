@@ -207,6 +207,62 @@
   color: var(--cf-brand-600);
 }
 
+/* Botao "Mais" e link nascem com estilos diferentes; aqui eles se igualam. */
+button.cf-navbottom__item {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* -------------------------------------------------- Painel "Mais" (mobile) */
+
+.cf-mais__fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.cf-mais {
+  position: fixed;
+  right: 0;
+  bottom: calc(var(--cf-navbottom-altura) + env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 46;
+  padding: var(--cf-esp-3) var(--cf-esp-4) var(--cf-esp-4);
+  background: var(--cf-superficie);
+  border-top: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-lg) var(--cf-raio-lg) 0 0;
+  box-shadow: var(--cf-sombra-md, 0 -6px 24px rgba(15, 23, 42, 0.12));
+}
+
+.cf-mais__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-mais__titulo {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-semi);
+  color: var(--cf-texto-suave);
+}
+
+.cf-mais__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* O painel só existe no celular: no desktop a barra lateral já lista tudo.
+   Mesmo ponto de corte da navegação inferior — 900px. */
+@media (min-width: 900px) {
+  .cf-mais,
+  .cf-mais__fundo { display: none; }
+}
+
 /* ------------------------------------------------------------------- FAB */
 
 .cf-fab {

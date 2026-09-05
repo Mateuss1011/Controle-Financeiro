@@ -678,14 +678,9 @@
 /* Em telas estreitas o cabeçalho de página empilha o seletor e o botão, que
    passam a ocupar a largura toda para virarem alvos de toque confortáveis. */
 @media (max-width: 560px) {
-  /* Lado a lado, o seletor sobrava ~150px e cortava "setembro de 2026".
-     Empilhados, os dois controles ficam legíveis e viram alvos de toque
-     confortáveis. */
-  .cf-pagehead__acoes {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-  }
+  /* O empilhamento do cabeçalho no celular mudou de casa: é regra de layout de
+     TODA tela, não do Dashboard, e agora vive em PageHeader.css. Deixá-la aqui
+     fazia o cabeçalho de Relatórios depender do CSS do Dashboard. */
 
   .cf-seletor { width: 100%; }
   .cf-seletor__campo { width: 100%; min-width: 0; }

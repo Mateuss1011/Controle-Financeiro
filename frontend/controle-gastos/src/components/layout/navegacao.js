@@ -18,9 +18,18 @@ export const NAVEGACAO = [
   { para: "/renda",         rotulo: "Renda",       icone: FiDollarSign, principal: true, disponivel: true },
   { para: "/orcamento",     rotulo: "Orçamento",   icone: FiPieChart,   disponivel: true },
   { para: "/metas",         rotulo: "Metas",       icone: FiTarget,     principal: true, disponivel: true },
-  { para: "/relatorios",    rotulo: "Relatórios",  icone: FiFileText, disponivel: false },
+  { para: "/relatorios",    rotulo: "Relatórios",  icone: FiFileText,   disponivel: true },
   { para: "/categorias",    rotulo: "Categorias",  icone: FiTag,      disponivel: false },
   { para: "/configuracoes", rotulo: "Ajustes",     icone: FiSettings, disponivel: false },
 ];
 
 export const NAVEGACAO_MOBILE = NAVEGACAO.filter((item) => item.principal);
+
+/**
+ * O que nao cabe na barra inferior do celular.
+ *
+ * Sem esta lista, Orcamento e Relatorios existiam so no desktop: a barra tem
+ * quatro lugares e a sidebar nao aparece no celular. Uma tela pronta e
+ * inalcancavel e uma tela que nao existe.
+ */
+export const NAVEGACAO_SECUNDARIA = NAVEGACAO.filter((item) => !item.principal);

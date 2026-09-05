@@ -1,23 +1,42 @@
-import { NavLink } from "react-router-dom";
-import { FiPlus, FiLogOut } from "react-icons/fi";
-import { NAVEGACAO, NAVEGACAO_MOBILE } from "./navegacao";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { FiPlus, FiLogOut, FiMoreHorizontal, FiX } from "react-icons/fi";
+import { NAVEGACAO, NAVEGACAO_MOBILE, NAVEGACAO_SECUNDARIA } from "./navegacao";
 import "./AppShell.css";
 
 /**
  * Casca da área autenticada.
  *
  * Desktop: barra lateral fixa. Celular: topo enxuto + navegação inferior com os
- * cinco destinos mais usados; o resto vai para "Mais". O botão de novo
- * lançamento é permanente nos dois — é a ação que o usuário mais repete.
+ * destinos mais usados; o resto abre em "Mais". O botão de novo lançamento é
+ * permanente nos dois — é a ação que o usuário mais repete.
  */
-
-
 export default function AppShell({
   children,
   usuario,
   onSair,
   onNovoLancamento,
 }) {
+  const [maisAberto, setMaisAberto] = useState(false);
+  const { pathname } = useLocation();
+
+  // Navegar fecha o painel: sem isso ele fica por cima da tela recém-aberta.
+  useEffect(() => setMaisAberto(false), [pathname]);
+
+  useEffect(() => {
+    if (!maisAberto) return;
+
+    const aoTeclar = (evento) => {
+      if (evento.key === "Escape") setMaisAberto(false);
+    };
+
+    document.addEventListener("keydown", aoTeclar);
+    return () => document.removeEventListener("keydown", aoTeclar);
+  }, [maisAberto]);
+
+  const emSecundaria = NAVEGACAO_SECUNDARIA.some(
+    (item) => item.disponivel && pathname.startsWith(item.para)
+  );
   const iniciais = (usuario?.name ?? "?")
     .split(" ")
     .slice(0, 2)
@@ -136,7 +155,66 @@ export default function AppShell({
             </span>
           )
         )}
+
+        {/* A barra tem quatro lugares e a sidebar não existe no celular:
+            sem este botão, Orçamento e Relatórios ficariam inalcançáveis. */}
+        <button
+          type="button"
+          className={`cf-navbottom__item ${emSecundaria ? "cf-navbottom__item--ativo" : ""}`}
+          onClick={() => setMaisAberto((aberto) => !aberto)}
+          aria-expanded={maisAberto}
+          aria-haspopup="dialog"
+        >
+          <FiMoreHorizontal aria-hidden="true" />
+          <span>Mais</span>
+        </button>
       </nav>
+
+      {maisAberto && (
+        <>
+          <div
+            className="cf-mais__fundo"
+            onClick={() => setMaisAberto(false)}
+            aria-hidden="true"
+          />
+          <div className="cf-mais" role="dialog" aria-label="Mais destinos">
+            <div className="cf-mais__topo">
+              <span className="cf-mais__titulo">Mais</span>
+              <button
+                type="button"
+                className="cf-btn cf-btn--fantasma cf-btn--sm"
+                onClick={() => setMaisAberto(false)}
+                aria-label="Fechar"
+              >
+                <FiX aria-hidden="true" />
+              </button>
+            </div>
+
+            <nav className="cf-mais__lista" aria-label="Outros destinos">
+              {NAVEGACAO_SECUNDARIA.map(({ para, rotulo, icone: Icone, disponivel }) =>
+                disponivel ? (
+                  <NavLink
+                    key={para}
+                    to={para}
+                    className={({ isActive }) =>
+                      `cf-navitem ${isActive ? "cf-navitem--ativo" : ""}`
+                    }
+                  >
+                    <Icone className="cf-navitem__icone" aria-hidden="true" />
+                    <span>{rotulo}</span>
+                  </NavLink>
+                ) : (
+                  <span key={para} className="cf-navitem cf-navitem--indisponivel">
+                    <Icone className="cf-navitem__icone" aria-hidden="true" />
+                    <span>{rotulo}</span>
+                    <span className="cf-navitem__breve">em breve</span>
+                  </span>
+                )
+              )}
+            </nav>
+          </div>
+        </>
+      )}
 
       <button
         type="button"
