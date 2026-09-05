@@ -29,14 +29,27 @@ class CapacidadeDeGastoService
         private readonly RendaService $rendas,
         private readonly RegraCincoTrintaVinteService $regra,
         private readonly PeriodoService $periodos,
+        private readonly MetaService $metas,
     ) {
     }
 
     /**
      * Estimativa de gasto diário até o fim do período.
      *
-     * O cálculo protege a meta de poupança ainda não cumprida: de nada adianta
-     * dizer que sobram R$ 900 se R$ 400 deveriam ir para a reserva.
+     * O cálculo protege o que não deveria ser gasto. Duas fontes disputam essa
+     * reserva:
+     *
+     *  - a REGRA 50/30/20, que separa 20% da renda para poupança;
+     *  - as METAS com prazo, que exigem um aporte mensal para fechar a tempo.
+     *
+     * As duas medem a mesma coisa por caminhos diferentes: dinheiro guardado.
+     * Somá-las contaria o mesmo real duas vezes; ignorar uma delas quebraria a
+     * outra. O que se reserva é o MAIOR dos dois — guardar o suficiente para as
+     * metas já satisfaz a regra, e vice-versa.
+     *
+     * Quando as metas exigem mais que a regra, isso não é erro: é informação. A
+     * resposta devolve os dois valores e sinaliza qual prevaleceu, para a
+     * interface poder mostrar o conflito em vez de escondê-lo.
      *
      * @return array<string, mixed>
      */
@@ -63,20 +76,26 @@ class CapacidadeDeGastoService
         $porTipo = $this->regra->totaisPorTipo($userId, $competencia);
         $gastos = array_sum($porTipo);
 
-        $metaPoupanca = round($renda * self::META_POUPANCA, 2);
-        $poupancaFeita = $porTipo[TipoCategoria::Poupanca->value];
-        $reservado = round(max(0.0, $metaPoupanca - $poupancaFeita), 2);
+        $reserva = $this->reserva(
+            $userId,
+            $renda,
+            $porTipo[TipoCategoria::Poupanca->value],
+            $competencia,
+        );
 
-        $disponivel = round($renda - $gastos - $reservado, 2);
+        $disponivel = round($renda - $gastos - $reserva['aplicada'], 2);
         $diasRestantes = max(1, $progresso['dias_restantes']);
 
         if ($disponivel <= 0.0) {
             return [
                 'disponivel'         => false,
                 'motivo'             => 'sem_folga',
-                'mensagem'           => 'Você já comprometeu toda a renda deste período, considerando a reserva de poupança.',
+                'mensagem'           => $reserva['metas_prevalecem']
+                    ? 'Você já comprometeu toda a renda deste período, considerando o aporte necessário para suas metas.'
+                    : 'Você já comprometeu toda a renda deste período, considerando a reserva de poupança.',
                 'valor_disponivel'   => $disponivel,
-                'reservado_poupanca' => $reservado,
+                'reservado_poupanca' => $reserva['aplicada'],
+                'reserva'            => $reserva,
                 'dias_restantes'     => $progresso['dias_restantes'],
                 'por_dia'            => null,
                 'ressalva'           => $this->ressalva(),
@@ -88,7 +107,8 @@ class CapacidadeDeGastoService
             'motivo'             => null,
             'mensagem'           => null,
             'valor_disponivel'   => $disponivel,
-            'reservado_poupanca' => $reservado,
+            'reservado_poupanca' => $reserva['aplicada'],
+            'reserva'            => $reserva,
             'dias_restantes'     => $progresso['dias_restantes'],
             'por_dia'            => round($disponivel / $diasRestantes, 2),
             'ressalva'           => $this->ressalva(),
@@ -149,6 +169,60 @@ class CapacidadeDeGastoService
         ];
     }
 
+    /**
+     * Quanto da renda fica fora do "posso gastar", e por quê.
+     *
+     * @return array<string, mixed>
+     */
+    private function reserva(
+        int $userId,
+        float $renda,
+        float $poupancaFeita,
+        CarbonImmutable $competencia,
+    ): array {
+        $metaRegra = round($renda * self::META_POUPANCA, 2);
+        $pelaRegra = round(max(0.0, $metaRegra - $poupancaFeita), 2);
+
+        $compromissoMetas = round(
+            $this->metas->compromissoMensal($userId, $competencia->startOfMonth()),
+            2,
+        );
+
+        // O que já foi guardado no mês abate também o compromisso das metas: é
+        // o mesmo dinheiro, contado de outro jeito.
+        $pelasMetas = round(max(0.0, $compromissoMetas - $poupancaFeita), 2);
+
+        $aplicada = max($pelaRegra, $pelasMetas);
+
+        return [
+            'aplicada'          => $aplicada,
+            'pela_regra'        => $pelaRegra,
+            'pelas_metas'       => $pelasMetas,
+            'compromisso_metas' => $compromissoMetas,
+            'meta_regra'        => $metaRegra,
+            'poupanca_feita'    => round($poupancaFeita, 2),
+            'metas_prevalecem'  => $pelasMetas > $pelaRegra,
+            'explicacao'        => $this->explicarReserva($pelaRegra, $pelasMetas),
+        ];
+    }
+
+    private function explicarReserva(float $pelaRegra, float $pelasMetas): string
+    {
+        if ($pelasMetas <= 0.0 && $pelaRegra <= 0.0) {
+            return 'Nada a reservar: o que você já guardou no período cobre a regra 50/30/20 e o aporte das metas com prazo.';
+        }
+
+        if ($pelasMetas > $pelaRegra) {
+            return 'Suas metas com prazo exigem mais do que os 20% da regra 50/30/20. Reservamos o maior dos dois valores, o das metas.';
+        }
+
+        if ($pelasMetas > 0.0) {
+            return 'Os 20% da regra 50/30/20 já cobrem o aporte necessário das suas metas com prazo.';
+        }
+
+        return 'Reserva dos 20% da regra 50/30/20 ainda não cumpridos no período.';
+    }
+
     /** @return array<string, mixed> */
     private function indisponivel(string $motivo, string $mensagem): array
     {
@@ -158,6 +232,7 @@ class CapacidadeDeGastoService
             'mensagem'           => $mensagem,
             'valor_disponivel'   => null,
             'reservado_poupanca' => null,
+            'reserva'            => null,
             'dias_restantes'     => null,
             'por_dia'            => null,
             'ressalva'           => $this->ressalva(),
@@ -166,7 +241,7 @@ class CapacidadeDeGastoService
 
     private function ressalva(): string
     {
-        return 'Estimativa calculada a partir dos dados que você registrou. Não é recomendação financeira.';
+        return 'Estimativa calculada a partir da renda, dos gastos e das metas que você registrou. Não é recomendação financeira.';
     }
 
     private function pct(float $valor): string

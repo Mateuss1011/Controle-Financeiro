@@ -39,6 +39,7 @@ class AnalisadorPorRegras implements AnalisadorFinanceiroInterface
             $this->saldo($contexto),
             $this->faixasDaRegra($contexto),
             $this->orcamentos($contexto),
+            $this->metas($contexto),
             $this->concentracao($contexto),
             $this->comparacao($contexto),
             $this->ritmo($contexto),
@@ -199,6 +200,87 @@ class AnalisadorPorRegras implements AnalisadorFinanceiroInterface
         }
 
         return [];
+    }
+
+    /**
+     * Metas: prazo vencido e conflito com a reserva da regra 50/30/20.
+     *
+     * No máximo um alerta e uma conquista — o painel de insights não é a tela
+     * de Metas, ele só chama atenção para o que mudou de estado.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function metas(array $c): array
+    {
+        $itens = $c['metas']['itens'] ?? [];
+
+        if ($itens === []) {
+            return [];
+        }
+
+        $insights = [];
+
+        $vencidas = array_values(array_filter($itens, fn ($m) => $m['status'] === 'vencida'));
+
+        if ($vencidas !== []) {
+            $pior = $vencidas[0];
+            $extras = count($vencidas) - 1;
+
+            $insights[] = [
+                'tipo'       => 'meta_vencida',
+                'titulo'     => 'Meta "' . $pior['nome'] . '" passou do prazo',
+                'mensagem'   => 'Faltam ' . $this->reais($pior['restante']) . ' para concluí-la'
+                    . ($extras > 0
+                        ? ' — e outra' . ($extras > 1 ? 's ' . $extras . ' metas também venceram.' : ' meta também venceu.')
+                        : '. Revise o valor ou o prazo.'),
+                'severidade' => 'atencao',
+                'contexto'   => [
+                    'meta'     => $pior['nome'],
+                    'restante' => $pior['restante'],
+                    'prazo'    => $pior['prazo'],
+                    'vencidas' => count($vencidas),
+                ],
+            ];
+        } elseif ($c['capacidade']['reserva']['metas_prevalecem'] ?? false) {
+            // A reserva aplicada saiu das metas, não da regra: vale dizer, para
+            // o usuário não achar que o "posso gastar" encolheu sem motivo.
+            $reserva = $c['capacidade']['reserva'];
+
+            $insights[] = [
+                'tipo'       => 'metas_acima_da_regra',
+                'titulo'     => 'Suas metas pedem mais que os 20% da regra',
+                'mensagem'   => 'O aporte necessário é ' . $this->reais($reserva['compromisso_metas'])
+                    . ' por mês, contra ' . $this->reais($reserva['meta_regra'])
+                    . ' da regra 50/30/20. A estimativa de gasto considera o maior dos dois.',
+                'severidade' => 'informativo',
+                'contexto'   => [
+                    'compromisso_metas' => $reserva['compromisso_metas'],
+                    'meta_regra'        => $reserva['meta_regra'],
+                    'reserva_aplicada'  => $reserva['aplicada'],
+                ],
+            ];
+        }
+
+        $concluidas = array_values(array_filter($itens, fn ($m) => $m['status'] === 'concluida'));
+
+        if ($concluidas !== []) {
+            $ultima = end($concluidas);
+
+            $insights[] = [
+                'tipo'       => 'meta_concluida',
+                'titulo'     => 'Meta "' . $ultima['nome'] . '" concluída',
+                'mensagem'   => 'Você juntou os ' . $this->reais($ultima['valor_objetivo']) . ' do objetivo.'
+                    . (count($concluidas) > 1 ? ' São ' . count($concluidas) . ' metas concluídas.' : ''),
+                'severidade' => 'positivo',
+                'contexto'   => [
+                    'meta'       => $ultima['nome'],
+                    'objetivo'   => $ultima['valor_objetivo'],
+                    'concluidas' => count($concluidas),
+                ],
+            ];
+        }
+
+        return $insights;
     }
 
     /** @return array<int, array<string, mixed>> */

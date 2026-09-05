@@ -1,4 +1,4 @@
-import { FiInfo, FiTrendingUp } from "react-icons/fi";
+import { FiInfo, FiLock, FiTrendingUp } from "react-icons/fi";
 import { Badge, Button, Card, Money, ProgressBar } from "../../../components/ui";
 import { formatarMoeda } from "../../../lib/format";
 import "./dashboard.css";
@@ -14,6 +14,52 @@ const ROTULO_DO_RITMO = {
   equilibrado: "No ritmo",
   folgado: "Abaixo do ritmo",
 };
+
+/**
+ * O que fica de fora do "posso gastar", e por quê.
+ *
+ * Duas fontes disputam essa reserva — os 20% da regra 50/30/20 e o aporte
+ * mensal das metas com prazo. Elas medem a mesma coisa por caminhos diferentes:
+ * dinheiro guardado. Somá-las contaria o mesmo real duas vezes, então reserva-se
+ * o MAIOR dos dois.
+ *
+ * Quando as metas prevalecem, o bloco mostra os dois números lado a lado. Uma
+ * meta explícita não pode encolher o "posso gastar" em silêncio — o usuário
+ * precisa ver que foi ela, e não a regra, que mandou.
+ */
+function Reserva({ reserva }) {
+  if (!reserva || reserva.aplicada <= 0) return null;
+
+  return (
+    <div
+      className={`cf-reserva ${reserva.metas_prevalecem ? "cf-reserva--metas" : ""}`}
+    >
+      <div className="cf-reserva__topo">
+        <span className="cf-reserva__titulo">
+          <FiLock aria-hidden="true" /> Reservado neste mês
+        </span>
+        <strong className="cf-reserva__valor">
+          {formatarMoeda(reserva.aplicada)}
+        </strong>
+      </div>
+
+      {reserva.metas_prevalecem && (
+        <dl className="cf-reserva__comparacao">
+          <div>
+            <dt>Suas metas com prazo</dt>
+            <dd>{formatarMoeda(reserva.compromisso_metas)}/mês</dd>
+          </div>
+          <div>
+            <dt>Regra 50/30/20</dt>
+            <dd>{formatarMoeda(reserva.meta_regra)}/mês</dd>
+          </div>
+        </dl>
+      )}
+
+      <p className="cf-reserva__explicacao">{reserva.explicacao}</p>
+    </div>
+  );
+}
 
 /**
  * "Quanto posso gastar?" — a pergunta mais prática do produto.
@@ -38,6 +84,12 @@ export default function CartaoCapacidade({ capacidade, ritmo, onAdicionarRenda }
             Adicionar renda
           </Button>
         )}
+
+        {/* Sem folga ainda tem reserva: mostrar o que a consumiu explica o
+            "R$ 0 disponíveis" melhor do que qualquer frase. */}
+        <Reserva reserva={capacidade.reserva} />
+
+        <p className="cf-capacidade__ressalva">{capacidade.ressalva}</p>
       </Card>
     );
   }
@@ -56,14 +108,13 @@ export default function CartaoCapacidade({ capacidade, ritmo, onAdicionarRenda }
           {capacidade.dias_restantes}{" "}
           {capacidade.dias_restantes === 1 ? "dia restante" : "dias restantes"}
           {capacidade.reservado_poupanca > 0 && (
-            <>
-              , já reservando {formatarMoeda(capacidade.reservado_poupanca)} para a
-              poupança
-            </>
+            <>, já reservando {formatarMoeda(capacidade.reservado_poupanca)}</>
           )}
           .
         </p>
       </div>
+
+      <Reserva reserva={capacidade.reserva} />
 
       {ritmo?.disponivel && (
         <div className="cf-ritmo">

@@ -321,6 +321,69 @@
   color: var(--cf-texto-fraco);
 }
 
+/* ----------------------------------------------------------------- Reserva */
+
+.cf-reserva {
+  margin-top: var(--cf-esp-4);
+  padding: var(--cf-esp-3);
+  background: var(--cf-superficie-sutil);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-md);
+}
+
+/* Quando a reserva vem das metas e não da regra, a borda ganha o acento da
+   marca: o usuário precisa notar que outra coisa mandou no número. */
+.cf-reserva--metas {
+  border-color: var(--cf-brand-500);
+  background: var(--cf-brand-50);
+}
+
+.cf-reserva__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-2);
+}
+
+.cf-reserva__titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--cf-texto-xs);
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+}
+
+.cf-reserva__valor {
+  font-size: var(--cf-texto-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-reserva__comparacao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-esp-4);
+  margin: var(--cf-esp-3) 0 0;
+}
+
+.cf-reserva__comparacao dt {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-reserva__comparacao dd {
+  margin: 0;
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-reserva__explicacao {
+  margin: var(--cf-esp-2) 0 0;
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
 /* ------------------------------------------------------------------- Ritmo */
 
 .cf-ritmo {

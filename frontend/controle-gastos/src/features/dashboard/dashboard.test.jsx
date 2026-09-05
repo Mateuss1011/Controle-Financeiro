@@ -432,3 +432,74 @@ describe("Dashboard — acessibilidade", () => {
     expect(within(regiao).getByText("Desejos acima do limite")).toBeInTheDocument();
   });
 });
+
+/*
+ * A reserva que o "posso gastar" desconta pode vir de duas fontes: os 20% da
+ * regra 50/30/20 ou o aporte mensal das metas com prazo. Uma meta explicita nao
+ * pode encolher a estimativa em silencio — o conflito precisa aparecer.
+ */
+describe("Dashboard — reserva e metas", () => {
+  const capacidadeCom = (reserva) => ({
+    disponivel: true, motivo: null, mensagem: null,
+    valor_disponivel: 1400, reservado_poupanca: reserva.aplicada,
+    dias_restantes: 15, por_dia: 93.33,
+    reserva,
+    ressalva: "Estimativa calculada a partir da renda, dos gastos e das metas que você registrou. Não é recomendação financeira.",
+  });
+
+  it("mostra os dois valores quando as metas pedem mais que a regra", async () => {
+    responder(respostaDashboard({
+      capacidade: capacidadeCom({
+        aplicada: 3000, pela_regra: 1000, pelas_metas: 3000,
+        compromisso_metas: 3000, meta_regra: 1000, poupanca_feita: 0,
+        metas_prevalecem: true,
+        explicacao: "Suas metas com prazo exigem mais do que os 20% da regra 50/30/20. Reservamos o maior dos dois valores, o das metas.",
+      }),
+    }));
+    const { container } = montar();
+
+    await screen.findByText("Quanto posso gastar?");
+
+    const bloco = container.querySelector(".cf-reserva");
+    expect(bloco).toBeInTheDocument();
+    expect(bloco).toHaveClass("cf-reserva--metas");
+    expect(within(bloco).getByText("R$ 3.000,00")).toBeInTheDocument();
+    expect(within(bloco).getByText("Suas metas com prazo")).toBeInTheDocument();
+    expect(within(bloco).getByText("R$ 1.000,00/mês")).toBeInTheDocument();
+    expect(within(bloco).getByText(/Reservamos o maior dos dois valores/)).toBeInTheDocument();
+  });
+
+  it("não apresenta conflito quando a regra já cobre as metas", async () => {
+    responder(respostaDashboard({
+      capacidade: capacidadeCom({
+        aplicada: 1000, pela_regra: 1000, pelas_metas: 100,
+        compromisso_metas: 100, meta_regra: 1000, poupanca_feita: 0,
+        metas_prevalecem: false,
+        explicacao: "Os 20% da regra 50/30/20 já cobrem o aporte necessário das suas metas com prazo.",
+      }),
+    }));
+    const { container } = montar();
+
+    await screen.findByText("Quanto posso gastar?");
+
+    const bloco = container.querySelector(".cf-reserva");
+    expect(bloco).not.toHaveClass("cf-reserva--metas");
+    expect(within(bloco).queryByText("Suas metas com prazo")).not.toBeInTheDocument();
+  });
+
+  it("não inventa bloco de reserva quando não há o que reservar", async () => {
+    responder(respostaDashboard({
+      capacidade: capacidadeCom({
+        aplicada: 0, pela_regra: 0, pelas_metas: 0,
+        compromisso_metas: 0, meta_regra: 1000, poupanca_feita: 1000,
+        metas_prevalecem: false,
+        explicacao: "Nada a reservar.",
+      }),
+    }));
+    const { container } = montar();
+
+    await screen.findByText("Quanto posso gastar?");
+
+    expect(container.querySelector(".cf-reserva")).not.toBeInTheDocument();
+  });
+});
