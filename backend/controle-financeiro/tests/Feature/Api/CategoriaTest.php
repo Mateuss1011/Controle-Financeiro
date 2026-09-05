@@ -234,4 +234,171 @@ class CategoriaTest extends TestCase
             ->assertJsonPath('total_lancamentos', 2)
             ->assertJsonPath('message', 'Esta categoria tem 2 lançamentos e não pode ser excluída.');
     }
+
+    // ------------------------ Fase final: unicidade insensível a caixa e acento
+
+    /**
+     * A regra não mudou nesta fase — mudou de LUGAR.
+     *
+     * A coluna `nome` é utf8mb4_unicode_ci no MariaDB, que ignora caixa e
+     * acento: "Café" já colidia com "Cafe" em produção. Só que a comparação era
+     * feita pelo banco, e o SQLite destes testes discorda — `=` é sensível à
+     * caixa, e COLLATE NOCASE só dobra A–Z ASCII. A suíte media um comportamento
+     * que a produção não tinha. Agora a regra vive em
+     * `Categoria::normalizarNome()` e vale igual nos dois motores.
+     *
+     * @return array<string, array{string, string}>
+     */
+    public static function nomesEquivalentes(): array
+    {
+        return [
+            'só caixa'          => ['Outros', 'outros'],
+            'caixa com acento'  => ['Alimentação', 'ALIMENTAÇÃO'],
+            'acento contra sem' => ['Cafe', 'Café'],
+            'acento no meio'    => ['Sao Paulo', 'São Paulo'],
+            'til e cedilha'     => ['Acao', 'Ação'],
+            'espaço nas pontas' => ['Pets', '  Pets  '],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('nomesEquivalentes')]
+    public function test_recusa_nome_equivalente_a_uma_categoria_propria(string $existente, string $tentativa): void
+    {
+        Categoria::factory()->create(['user_id' => $this->user->id, 'nome' => $existente]);
+
+        $this->actingAs($this->user)
+            ->postJson('/api/categorias', ['nome' => $tentativa, 'tipo' => 'desejo'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nome');
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('nomesEquivalentes')]
+    public function test_recusa_nome_equivalente_a_uma_categoria_global(string $existente, string $tentativa): void
+    {
+        Categoria::factory()->create(['user_id' => null, 'nome' => $existente]);
+
+        $this->actingAs($this->user)
+            ->postJson('/api/categorias', ['nome' => $tentativa, 'tipo' => 'desejo'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nome');
+    }
+
+    /** Store e Update precisam decidir igual — por isso compartilham o código. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('nomesEquivalentes')]
+    public function test_edicao_usa_a_mesma_regra_da_criacao(string $existente, string $tentativa): void
+    {
+        Categoria::factory()->create(['user_id' => null, 'nome' => $existente]);
+        $minha = Categoria::factory()->create([
+            'user_id' => $this->user->id,
+            'nome'    => 'Nome qualquer',
+        ]);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/categorias/{$minha->id}", ['nome' => $tentativa])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nome');
+    }
+
+    /** Renomear para o próprio nome não é conflito consigo mesma. */
+    public function test_edicao_mantendo_o_proprio_nome_e_aceita(): void
+    {
+        $categoria = Categoria::factory()->create([
+            'user_id' => $this->user->id,
+            'nome'    => 'Alimentação',
+        ]);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/categorias/{$categoria->id}", ['nome' => 'Alimentação', 'tipo' => 'desejo'])
+            ->assertOk()
+            ->assertJsonPath('data.tipo', 'desejo');
+    }
+
+    /** Corrigir só a caixa do próprio nome também é aceito. */
+    public function test_edicao_ajustando_apenas_a_caixa_do_proprio_nome(): void
+    {
+        $categoria = Categoria::factory()->create([
+            'user_id' => $this->user->id,
+            'nome'    => 'alimentação',
+        ]);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/categorias/{$categoria->id}", ['nome' => 'Alimentação'])
+            ->assertOk()
+            ->assertJsonPath('data.nome', 'Alimentação');
+
+        $this->assertSame('Alimentação', $categoria->fresh()->nome);
+    }
+
+    public function test_edicao_para_nome_de_outra_categoria_propria_e_recusada(): void
+    {
+        Categoria::factory()->create(['user_id' => $this->user->id, 'nome' => 'Pets']);
+        $outra = Categoria::factory()->create(['user_id' => $this->user->id, 'nome' => 'Farmacia']);
+
+        $this->actingAs($this->user)
+            ->putJson("/api/categorias/{$outra->id}", ['nome' => 'PETS'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('nome');
+
+        $this->assertSame('Farmacia', $outra->fresh()->nome);
+    }
+
+    /** Nomes de fato diferentes continuam livres: a regra não pode virar rede. */
+    public function test_nomes_realmente_diferentes_continuam_aceitos(): void
+    {
+        Categoria::factory()->create(['user_id' => null, 'nome' => 'Alimentação']);
+
+        foreach (['Alimentos', 'Alimentação Fora', 'Pets', 'Café da manhã'] as $nome) {
+            $this->actingAs($this->user)
+                ->postJson('/api/categorias', ['nome' => $nome, 'tipo' => 'desejo'])
+                ->assertCreated();
+        }
+    }
+
+    /** O nome de outra pessoa não me atrapalha, nem com caixa diferente. */
+    public function test_nome_equivalente_de_outro_usuario_continua_livre(): void
+    {
+        $outro = User::factory()->create();
+        Categoria::factory()->create(['user_id' => $outro->id, 'nome' => 'Café']);
+
+        $this->actingAs($this->user)
+            ->postJson('/api/categorias', ['nome' => 'cafe', 'tipo' => 'desejo'])
+            ->assertCreated();
+    }
+
+    /**
+     * Trava a normalização em si.
+     *
+     * Os pares vieram de uma conferência caractere a caractere contra o próprio
+     * MariaDB: 53 acentuados, nenhuma divergência.
+     */
+    public function test_normalizacao_dobra_caixa_e_acento(): void
+    {
+        $equivalentes = [
+            ['Outros', 'outros'],
+            ['Alimentação', 'ALIMENTAÇÃO'],
+            ['Cafe', 'Café'],
+            ['Sao Paulo', 'São Paulo'],
+            ['Aviao', 'Avião'],
+            ['Coracao', 'Coração'],
+            ['Pets', ' Pets '],
+        ];
+
+        foreach ($equivalentes as [$a, $b]) {
+            $this->assertSame(
+                Categoria::normalizarNome($a),
+                Categoria::normalizarNome($b),
+                "[{$a}] e [{$b}] deveriam normalizar igual"
+            );
+        }
+
+        $distintos = [['Alimentação', 'Alimentos'], ['Cafe', 'Chá'], ['Pets', 'Pet']];
+
+        foreach ($distintos as [$a, $b]) {
+            $this->assertNotSame(
+                Categoria::normalizarNome($a),
+                Categoria::normalizarNome($b),
+                "[{$a}] e [{$b}] NAO deveriam normalizar igual"
+            );
+        }
+    }
 }

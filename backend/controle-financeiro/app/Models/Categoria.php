@@ -80,4 +80,48 @@ class Categoria extends Model
     {
         return $query->where('tipo', $tipo->value);
     }
+
+    /**
+     * Diacríticos do alfabeto latino, para o dobramento de acentos.
+     *
+     * Escrita à mão porque a `ext-intl` não está instalada — sem ela não há
+     * `Normalizer`, e `iconv('ASCII//TRANSLIT')` muda de resultado conforme o
+     * sistema, que é exatamente o tipo de variação que esta classe existe para
+     * eliminar.
+     *
+     * Só as maiúsculas ficam de fora: `mb_strtolower` roda antes.
+     */
+    private const DIACRITICOS = [
+        'á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a',
+        'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
+        'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
+        'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o',
+        'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u',
+        'ç' => 'c', 'ñ' => 'n', 'ý' => 'y', 'ÿ' => 'y',
+    ];
+
+    /**
+     * Nome reduzido à forma que decide se duas categorias são a mesma.
+     *
+     * ESTE É O ÚNICO LUGAR onde a comparação de nomes é definida. Store e
+     * Update passam por aqui; qualquer outro ponto que precise comparar nomes
+     * também deve.
+     *
+     * A regra não foi escolhida agora — ela já valia. A coluna `nome` é
+     * `utf8mb4_unicode_ci` no MariaDB, que ignora caixa E acento: em produção
+     * "Café" já colidia com "Cafe". O que mudou foi o LUGAR da regra. Ela vivia
+     * na collation, então o SQLite dos testes discordava do MariaDB — `=` é
+     * sensível à caixa lá, e `COLLATE NOCASE` só dobra A–Z ASCII, deixando
+     * "ALIMENTAÇÃO" e "Alimentação" como nomes distintos. A suíte media um
+     * comportamento que a produção não tinha.
+     *
+     * O dobramento cobre o alfabeto latino, que é o necessário para um produto
+     * em português — NÃO é uma implementação geral de Unicode. Um nome em
+     * grego ou cirílico com diacrítico ainda seria comparado de forma diferente
+     * do que o MariaDB faria.
+     */
+    public static function normalizarNome(string $nome): string
+    {
+        return strtr(mb_strtolower(trim($nome), 'UTF-8'), self::DIACRITICOS);
+    }
 }
