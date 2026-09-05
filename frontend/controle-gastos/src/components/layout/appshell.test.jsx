@@ -120,3 +120,94 @@ describe("AppShell — todo destino disponível é alcançável no celular", () 
     );
   });
 });
+
+/*
+ * O painel cobre a tela e o que esta atras continua alcancavel por Tab: sem
+ * contencao, quem navega por teclado sai do painel sem perceber e passa a
+ * operar uma interface que nao esta vendo.
+ */
+describe("AppShell — foco preso no painel 'Mais'", () => {
+  const abrir = async () => {
+    const gatilho = screen.getByRole("button", { name: /Mais/ });
+    await userEvent.click(gatilho);
+    return gatilho;
+  };
+
+  const focaveisDoPainel = () => {
+    const painel = screen.getByRole("dialog", { name: "Mais destinos" });
+    return [...painel.querySelectorAll('a[href], button:not([disabled])')];
+  };
+
+  it("anuncia-se como modal", async () => {
+    montar();
+    await abrir();
+
+    expect(screen.getByRole("dialog", { name: "Mais destinos" })).toHaveAttribute(
+      "aria-modal",
+      "true"
+    );
+  });
+
+  /** Quem abre "Mais" quer escolher um destino: o foco ja comeca em um. */
+  it("leva o foco para o primeiro interativo ao abrir", async () => {
+    montar();
+    await abrir();
+
+    expect(document.activeElement).toBe(focaveisDoPainel()[0]);
+  });
+
+  it("Tab no ultimo elemento volta para o primeiro", async () => {
+    montar();
+    await abrir();
+
+    const lista = focaveisDoPainel();
+    lista[lista.length - 1].focus();
+
+    await userEvent.tab();
+
+    expect(document.activeElement).toBe(lista[0]);
+  });
+
+  it("Shift+Tab no primeiro elemento vai para o ultimo", async () => {
+    montar();
+    await abrir();
+
+    const lista = focaveisDoPainel();
+    lista[0].focus();
+
+    await userEvent.tab({ shift: true });
+
+    expect(document.activeElement).toBe(lista[lista.length - 1]);
+  });
+
+  /** Percorrer o painel inteiro nao pode cair na pagina atras. */
+  it("o foco nao escapa do painel ao percorrer todos os itens", async () => {
+    montar();
+    await abrir();
+    const painel = screen.getByRole("dialog", { name: "Mais destinos" });
+
+    for (let passo = 0; passo < focaveisDoPainel().length + 3; passo++) {
+      await userEvent.tab();
+      expect(painel.contains(document.activeElement)).toBe(true);
+    }
+  });
+
+  it("devolve o foco ao botao que abriu, ao fechar com Escape", async () => {
+    montar();
+    const gatilho = await abrir();
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(gatilho);
+  });
+
+  it("devolve o foco ao botao que abriu, ao fechar pelo X", async () => {
+    montar();
+    const gatilho = await abrir();
+
+    await userEvent.click(screen.getByRole("button", { name: "Fechar" }));
+
+    expect(document.activeElement).toBe(gatilho);
+  });
+});
