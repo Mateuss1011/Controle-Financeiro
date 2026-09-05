@@ -38,6 +38,7 @@ class AnalisadorPorRegras implements AnalisadorFinanceiroInterface
             $this->semDados($contexto),
             $this->saldo($contexto),
             $this->faixasDaRegra($contexto),
+            $this->orcamentos($contexto),
             $this->concentracao($contexto),
             $this->comparacao($contexto),
             $this->ritmo($contexto),
@@ -135,6 +136,69 @@ class AnalisadorPorRegras implements AnalisadorFinanceiroInterface
         }
 
         return $insights;
+    }
+
+    /**
+     * Orçamentos estourados e no limite.
+     *
+     * Só o pior caso vira insight: listar cinco categorias estouradas encheria
+     * o painel e diluiria a informação. O número total continua visível na tela
+     * de Orçamento.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function orcamentos(array $c): array
+    {
+        $itens = $c['orcamentos']['itens'] ?? [];
+
+        if ($itens === []) {
+            return [];
+        }
+
+        $estourados = array_values(array_filter($itens, fn ($i) => $i['status'] === 'estourado'));
+
+        if ($estourados !== []) {
+            $pior = $estourados[0];
+            $excedente = abs($pior['restante']);
+            $extras = count($estourados) - 1;
+
+            return [[
+                'tipo'       => 'orcamento_estourado',
+                'titulo'     => 'Orçamento de ' . $pior['categoria'] . ' estourado',
+                'mensagem'   => 'Você passou ' . $this->reais($excedente) . ' do limite definido'
+                    . ($extras > 0
+                        ? ' — e outra' . ($extras > 1 ? 's ' . $extras . ' categorias estão' : ' categoria está') . ' acima do orçamento.'
+                        : '.'),
+                'severidade' => 'critico',
+                'contexto'   => [
+                    'categoria'  => $pior['categoria'],
+                    'limite'     => $pior['limite'],
+                    'gasto'      => $pior['gasto'],
+                    'excedente'  => $excedente,
+                    'estourados' => count($estourados),
+                ],
+            ]];
+        }
+
+        $emAtencao = array_values(array_filter($itens, fn ($i) => $i['status'] === 'atencao'));
+
+        if ($emAtencao !== []) {
+            $pior = $emAtencao[0];
+
+            return [[
+                'tipo'       => 'orcamento_no_limite',
+                'titulo'     => 'Orçamento de ' . $pior['categoria'] . ' perto do limite',
+                'mensagem'   => 'Restam ' . $this->reais($pior['restante']) . ' dos ' . $this->reais($pior['limite']) . ' orçados.',
+                'severidade' => 'atencao',
+                'contexto'   => [
+                    'categoria'  => $pior['categoria'],
+                    'restante'   => $pior['restante'],
+                    'percentual' => $pior['percentual'],
+                ],
+            ]];
+        }
+
+        return [];
     }
 
     /** @return array<int, array<string, mixed>> */

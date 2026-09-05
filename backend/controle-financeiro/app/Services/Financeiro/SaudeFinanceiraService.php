@@ -11,7 +11,7 @@ use Carbon\CarbonImmutable;
  * METODOLOGIA — documentada aqui e devolvida na API, porque uma pontuação que
  * o usuário não consegue auditar não gera confiança.
  *
- * Quatro indicadores, cada um normalizado em 0..1 por interpolação linear e
+ * Cinco indicadores, cada um normalizado em 0..1 por interpolação linear e
  * multiplicado pelo seu peso:
  *
  *  1. Taxa de poupança (peso 35)
@@ -31,10 +31,12 @@ use Carbon\CarbonImmutable;
  *     d = gasto do tipo desejo ÷ renda. Até 30% da renda, nota cheia. Decai
  *     linearmente e chega a zero em 60% da renda.
  *
- * O quinto indicador previsto na metodologia — cumprimento de orçamentos, peso
- * 5 — depende da funcionalidade de Orçamento, que ainda não existe. Enquanto
- * não existir, o peso é redistribuído proporcionalmente entre os quatro acima,
- * exatamente como a metodologia aprovada prevê.
+ *  5. Cumprimento de orçamentos (peso 5)
+ *     Proporção das categorias com orçamento que fecharam dentro do limite.
+ *     Só entra na conta quando existe pelo menos um orçamento definido; sem
+ *     nenhum, o peso é redistribuído proporcionalmente entre os quatro acima,
+ *     exatamente como a metodologia aprovada prevê. Redistribuir em vez de
+ *     zerar evita punir quem simplesmente ainda não usa a funcionalidade.
  *
  * DADOS INSUFICIENTES: sem renda registrada, ou com menos de 3 lançamentos na
  * competência, não há base para uma nota. O serviço devolve `suficiente: false`
@@ -49,17 +51,19 @@ class SaudeFinanceiraService
     private const TETO_NECESSIDADE = 0.50;
     private const TETO_DESEJO = 0.30;
 
-    /** Pesos da metodologia. O de orçamento fica reservado para a Fase G. */
+    /** Pesos da metodologia. */
     private const PESOS = [
         'poupanca'     => 35,
         'margem'       => 25,
         'necessidades' => 20,
         'desejos'      => 15,
+        'orcamentos'   => 5,
     ];
 
     public function __construct(
         private readonly RendaService $rendas,
         private readonly RegraCincoTrintaVinteService $regra,
+        private readonly OrcamentoService $orcamentos,
     ) {
     }
 
@@ -101,11 +105,21 @@ class SaudeFinanceiraService
             ),
         ];
 
-        $pesoTotal = array_sum(self::PESOS);
+        $cumprimento = $this->orcamentos->cumprimento($userId, $competencia);
+
+        if ($cumprimento !== null) {
+            $indicadores[] = $this->indicadorOrcamentos($cumprimento);
+        }
+
+        // Só os pesos dos indicadores que entraram: sem orçamento definido, o
+        // peso 5 se dilui proporcionalmente entre os outros quatro.
+        $pesoTotal = array_sum(array_map(
+            fn (array $indicador) => self::PESOS[$indicador['chave']],
+            $indicadores,
+        ));
         $pontuacao = 0.0;
 
         foreach ($indicadores as $indice => $indicador) {
-            // Redistribuição proporcional: os pesos somam 95 sem o de orçamento.
             $pontos = $indicador['nota'] * (self::PESOS[$indicador['chave']] / $pesoTotal) * 100;
             $indicadores[$indice]['pontos'] = round($pontos, 1);
             $indicadores[$indice]['pontos_maximos'] = round((self::PESOS[$indicador['chave']] / $pesoTotal) * 100, 1);
@@ -124,7 +138,9 @@ class SaudeFinanceiraService
             'rotulo'        => $this->rotuloDaClassificacao($classificacao),
             'resumo'        => $this->resumo($classificacao),
             'indicadores'   => $indicadores,
-            'metodologia'   => 'Média ponderada de quatro indicadores: taxa de poupança (35), margem do período (25), necessidades até 50% da renda (20) e desejos até 30% da renda (15).',
+            'metodologia'   => $cumprimento !== null
+                ? 'Média ponderada de cinco indicadores: taxa de poupança (35), margem do período (25), necessidades até 50% da renda (20), desejos até 30% da renda (15) e cumprimento dos orçamentos (5).'
+                : 'Média ponderada de quatro indicadores: taxa de poupança (35), margem do período (25), necessidades até 50% da renda (20) e desejos até 30% da renda (15). O peso do cumprimento de orçamentos é redistribuído porque nenhum orçamento foi definido.',
             'motivo'        => null,
         ];
     }
@@ -200,6 +216,20 @@ class SaudeFinanceiraService
             'referencia' => 'limite de ' . (int) round($teto * 100) . '% da renda',
             'explicacao' => 'Quanto da renda foi consumido por esta faixa da regra 50/30/20.',
             'nota'       => $nota,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function indicadorOrcamentos(float $cumprimento): array
+    {
+        return [
+            'chave'      => 'orcamentos',
+            'rotulo'     => 'Orçamentos respeitados',
+            'peso'       => self::PESOS['orcamentos'],
+            'valor'      => round($cumprimento * 100, 1),
+            'referencia' => 'meta de 100% das categorias orçadas',
+            'explicacao' => 'Proporção das categorias com orçamento que fecharam dentro do limite.',
+            'nota'       => $this->limitar($cumprimento),
         ];
     }
 

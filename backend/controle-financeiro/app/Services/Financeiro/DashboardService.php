@@ -26,6 +26,7 @@ class DashboardService
         private readonly RegraCincoTrintaVinteService $regra,
         private readonly SaudeFinanceiraService $saude,
         private readonly CapacidadeDeGastoService $capacidade,
+        private readonly OrcamentoService $orcamentos,
         private readonly AnalisadorFinanceiroInterface $analisador,
     ) {
     }
@@ -50,6 +51,7 @@ class DashboardService
         $categorias = $this->porCategoria($lancamentos, $resumo['gastos']);
         $comparacao = $this->comparacao($userId, $competencia, $resumo);
         $ritmo = $this->capacidade->ritmo($userId, $competencia);
+        $orcamentos = $this->orcamentos->paraCompetencia($userId, $competencia);
 
         $contexto = [
             'resumo'            => $resumo,
@@ -57,6 +59,7 @@ class DashboardService
             'categorias'        => $categorias,
             'comparacao'        => $comparacao,
             'ritmo'             => $ritmo,
+            'orcamentos'        => $orcamentos,
             'total_lancamentos' => $lancamentos->count(),
         ];
 
@@ -75,6 +78,7 @@ class DashboardService
             'regra'                  => $regra,
             'capacidade'             => $this->capacidade->calcular($userId, $competencia),
             'ritmo'                  => $ritmo,
+            'orcamentos'             => $orcamentos,
             'categorias'             => $categorias,
             'ultimos_lancamentos'    => $lancamentos->sortByDesc('data')->take(5)->values(),
             'insights'               => $this->analisador->analisar($contexto),
