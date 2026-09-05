@@ -32,9 +32,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // A própria conta. Sem {id} na URL de propósito: o alvo é sempre o dono do
     // token, então não existe id para manipular.
-    Route::patch('/perfil', [PerfilController::class, 'update']);
+    // Ambas verificam a senha atual, então ambas são um oráculo de adivinhação
+    // se ficarem sem limite — melhor que o próprio login, que é limitado.
+    // `credencial` e não `autenticacao`: aquele limitador tem o e-mail do corpo
+    // na chave, e aqui o e-mail é escolhido por quem ataca.
+    Route::patch('/perfil', [PerfilController::class, 'update'])
+        ->middleware('throttle:credencial');
     Route::put('/perfil/senha', [PerfilController::class, 'atualizarSenha'])
-        ->middleware('throttle:autenticacao');
+        ->middleware('throttle:credencial');
 
     Route::apiResource('gastos', GastoController::class);
     Route::apiResource('categorias', CategoriaController::class);

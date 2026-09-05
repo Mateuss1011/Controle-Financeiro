@@ -28,17 +28,24 @@ export default function FormularioPerfil() {
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     setNome(usuario?.name ?? "");
     setEmail(usuario?.email ?? "");
+    setSenha("");
   }, [usuario]);
 
   const mudou = nome !== (usuario?.name ?? "") || email !== (usuario?.email ?? "");
   const emailMudou = email !== (usuario?.email ?? "");
-  const podeSalvar = mudou && nome.trim() !== "" && email.trim() !== "";
+  const podeSalvar =
+    mudou &&
+    nome.trim() !== "" &&
+    email.trim() !== "" &&
+    // A senha só é barreira quando o e-mail muda; trocar o nome nunca a pede.
+    (!emailMudou || senha !== "");
 
   async function salvar(evento) {
     evento.preventDefault();
@@ -49,9 +56,14 @@ export default function FormularioPerfil() {
       const { data } = await api.patch("/perfil", {
         name: nome.trim(),
         email: email.trim(),
+        // Só acompanha a requisição que de fato troca a credencial. O backend
+        // decide sozinho, comparando com o e-mail gravado — isto aqui é
+        // conveniência, não a regra.
+        ...(emailMudou ? { senha_atual: senha } : {}),
       });
 
       atualizarUsuario(data.data);
+      setSenha("");
       toast.sucesso("Perfil atualizado.");
     } catch (error) {
       setErro(extrairErro(error));
@@ -113,6 +125,34 @@ export default function FormularioPerfil() {
               />
             )}
           </Field>
+
+          {/*
+            * O campo só existe quando a credencial vai mudar: pedir senha para
+            * trocar o nome seria atrito sem motivo.
+            *
+            * "Confirme sua senha", e não "Senha atual": o cartão de Senha, logo
+            * abaixo, já tem um campo com esse rótulo. Dois campos com o mesmo
+            * nome na mesma página deixam quem navega por leitor de tela sem
+            * saber a qual formulário cada um pertence.
+            */}
+          {emailMudou && (
+            <Field
+              label="Confirme sua senha"
+              obrigatorio
+              erro={erro?.campos?.senha_atual}
+              ajuda="Necessária para trocar o e-mail de acesso."
+            >
+              {(a) => (
+                <Input
+                  type="password"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  autoComplete="current-password"
+                  {...a}
+                />
+              )}
+            </Field>
+          )}
 
           <div className="cf-ajustes__acoes">
             <Button type="submit" disabled={!podeSalvar} carregando={salvando}>

@@ -40,6 +40,28 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        /**
+         * Rotas autenticadas que conferem a senha atual: troca de e-mail e
+         * troca de senha.
+         *
+         * A chave é o ID do usuário, e NÃO o e-mail enviado. Reaproveitar o
+         * limitador 'autenticacao' aqui parece natural e é um furo: naquele
+         * balde a chave inclui o e-mail do corpo, que nestas rotas é escolhido
+         * por quem ataca — bastava variar o e-mail a cada tentativa para ganhar
+         * um balde novo e adivinhar a senha à vontade. Foi exatamente o que o
+         * smoke test da fase final mostrou, com seis tentativas seguidas sem
+         * bloqueio.
+         *
+         * No login o e-mail na chave está certo, porque lá ele identifica a
+         * conta alvo. Aqui a conta alvo é quem está autenticado.
+         */
+        RateLimiter::for('credencial', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by('credencial|' . ($request->user()?->id ?: $request->ip())),
+                Limit::perMinute(20)->by('credencial-ip|' . $request->ip()),
+            ];
+        });
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
         });

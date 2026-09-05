@@ -68,6 +68,8 @@ describe("Ajustes — perfil", () => {
         email: "maria@exemplo.com",
       })
     );
+    // Trocar o nome nao envolve credencial: nada de senha no payload.
+    expect(api.patch.mock.calls[0][1]).not.toHaveProperty("senha_atual");
 
     // Sem isto, a saudação do Dashboard ficaria com o nome antigo.
     expect(valor.atualizarUsuario).toHaveBeenCalledWith(atualizado);
@@ -99,9 +101,106 @@ describe("Ajustes — perfil", () => {
     const email = screen.getByLabelText(/E-mail/);
     await userEvent.clear(email);
     await userEvent.type(email, "joao@exemplo.com");
+    await userEvent.type(screen.getByLabelText(/Confirme sua senha/), "SenhaAtual#2026");
     await userEvent.click(screen.getByRole("button", { name: "Salvar alterações" }));
 
     expect(await screen.findByText("Este e-mail já está em uso.")).toBeInTheDocument();
+  });
+});
+
+/*
+ * O e-mail e a credencial de login. Trocar sem provar identidade e o caminho
+ * mais curto entre um computador deixado aberto e o sequestro da conta.
+ */
+describe("Ajustes — senha para trocar o e-mail", () => {
+  const trocarEmail = async (novo = "nova@exemplo.com") => {
+    const email = screen.getByLabelText(/E-mail/);
+    await userEvent.clear(email);
+    await userEvent.type(email, novo);
+  };
+
+  it("nao pede senha enquanto o e-mail nao muda", () => {
+    montar();
+
+    expect(screen.queryByLabelText(/Confirme sua senha/)).not.toBeInTheDocument();
+  });
+
+  it("pede a senha assim que o e-mail muda", async () => {
+    montar();
+    await trocarEmail();
+
+    expect(screen.getByLabelText(/Confirme sua senha/)).toBeInTheDocument();
+  });
+
+  it("bloqueia o envio enquanto a senha nao for preenchida", async () => {
+    montar();
+    await trocarEmail();
+
+    expect(screen.getByRole("button", { name: "Salvar alterações" })).toBeDisabled();
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it("envia a senha junto quando o e-mail muda", async () => {
+    api.patch.mockResolvedValue({
+      data: { data: { ...USUARIO, email: "nova@exemplo.com" } },
+    });
+    montar();
+
+    await trocarEmail();
+    await userEvent.type(screen.getByLabelText(/Confirme sua senha/), "SenhaAtual#2026");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    await waitFor(() =>
+      expect(api.patch).toHaveBeenCalledWith("/perfil", {
+        name: "Maria Silva",
+        email: "nova@exemplo.com",
+        senha_atual: "SenhaAtual#2026",
+      })
+    );
+  });
+
+  it("mostra a recusa do servidor no campo da senha", async () => {
+    api.patch.mockRejectedValue({
+      response: {
+        status: 422,
+        data: { message: "erro", errors: { senha_atual: ["A senha atual está incorreta."] } },
+        headers: {},
+      },
+    });
+    montar();
+
+    await trocarEmail();
+    await userEvent.type(screen.getByLabelText(/Confirme sua senha/), "ChutandoAqui#1");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    expect(await screen.findByText("A senha atual está incorreta.")).toBeInTheDocument();
+    // O campo continua na tela para o usuario tentar de novo.
+    expect(screen.getByLabelText(/Confirme sua senha/)).toBeInTheDocument();
+  });
+
+  /** Voltar atras no e-mail dispensa a senha de novo. */
+  it("esconde o campo quando o e-mail volta ao original", async () => {
+    montar();
+    await trocarEmail();
+    expect(screen.getByLabelText(/Confirme sua senha/)).toBeInTheDocument();
+
+    await trocarEmail("maria@exemplo.com");
+
+    expect(screen.queryByLabelText(/Confirme sua senha/)).not.toBeInTheDocument();
+  });
+  /** Dois campos de senha na mesma pagina precisam ter nomes distintos. */
+  it("nao colide com o campo de senha do cartao de troca de senha", async () => {
+    montar();
+
+    const email = screen.getByLabelText(/E-mail/);
+    await userEvent.clear(email);
+    await userEvent.type(email, "nova@exemplo.com");
+
+    expect(screen.getByLabelText(/Confirme sua senha/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Senha atual/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Confirme sua senha/)).not.toBe(
+      screen.getByLabelText(/Senha atual/)
+    );
   });
 });
 

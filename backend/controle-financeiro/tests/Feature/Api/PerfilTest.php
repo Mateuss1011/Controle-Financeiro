@@ -26,12 +26,14 @@ class PerfilTest extends TestCase
 
     // ---------------------------------------------------------------- perfil
 
+    /** Nome e e-mail de uma vez: como o e-mail muda, a senha entra junto. */
     public function test_atualiza_nome_e_email(): void
     {
         $this->actingAs($this->user)
             ->patchJson('/api/perfil', [
-                'name'  => 'Maria Silva Souza',
-                'email' => 'maria.souza@exemplo.com',
+                'name'        => 'Maria Silva Souza',
+                'email'       => 'maria.souza@exemplo.com',
+                'senha_atual' => 'SenhaAtual#2026',
             ])
             ->assertOk()
             ->assertJsonPath('data.name', 'Maria Silva Souza')
@@ -93,6 +95,176 @@ class PerfilTest extends TestCase
 
         $this->assertStringNotContainsString('password', $conteudo);
         $this->assertStringNotContainsString('$2y$', $conteudo);
+    }
+
+    // ------------------------------------------- senha para trocar o e-mail
+
+    /**
+     * O e-mail e a credencial de login: troca-lo sem provar identidade e o
+     * caminho mais curto entre um computador deixado aberto e o sequestro da
+     * conta.
+     */
+    public function test_altera_o_email_com_a_senha_correta(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'email'       => 'nova@exemplo.com',
+                'senha_atual' => 'SenhaAtual#2026',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.email', 'nova@exemplo.com');
+
+        $this->assertSame('nova@exemplo.com', $this->user->fresh()->email);
+    }
+
+    public function test_recusa_a_troca_de_email_sem_senha(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', ['email' => 'nova@exemplo.com'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('senha_atual');
+
+        $this->assertSame('maria@exemplo.com', $this->user->fresh()->email);
+    }
+
+    public function test_recusa_a_troca_de_email_com_senha_incorreta(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'email'       => 'nova@exemplo.com',
+                'senha_atual' => 'ChutandoAqui#1',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('senha_atual');
+    }
+
+    /** A prova mais importante: a falha nao pode deixar o e-mail alterado. */
+    public function test_email_permanece_intacto_apos_senha_errada(): void
+    {
+        $this->actingAs($this->user)->patchJson('/api/perfil', [
+            'email'       => 'invasor@exemplo.com',
+            'senha_atual' => 'ChutandoAqui#1',
+        ])->assertStatus(422);
+
+        $depois = $this->user->fresh();
+
+        $this->assertSame('maria@exemplo.com', $depois->email);
+        $this->assertSame('Maria Silva', $depois->name);
+        $this->assertTrue(Hash::check('SenhaAtual#2026', $depois->password));
+    }
+
+    /** Trocar so o nome nao envolve credencial: nao pede senha. */
+    public function test_altera_o_nome_sem_pedir_senha(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', ['name' => 'Maria Souza'])
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Maria Souza');
+    }
+
+    /**
+     * O formulario manda nome E e-mail a cada salvamento. Uma regra do tipo
+     * "campo e-mail presente => peca a senha" faria a troca de nome pedir senha.
+     */
+    public function test_reenviar_o_mesmo_email_junto_com_o_nome_nao_pede_senha(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'name'  => 'Maria Souza',
+                'email' => 'maria@exemplo.com',
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Maria Souza')
+            ->assertJsonPath('data.email', 'maria@exemplo.com');
+    }
+
+    /** `senha_atual` e prova de identidade, nao coluna de `users`. */
+    public function test_senha_atual_nao_vaza_para_o_update_do_model(): void
+    {
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'email'       => 'nova@exemplo.com',
+                'senha_atual' => 'SenhaAtual#2026',
+            ])
+            ->assertOk();
+
+        // A senha continua sendo a original: nada foi sobrescrito por engano.
+        $this->assertTrue(Hash::check('SenhaAtual#2026', $this->user->fresh()->password));
+    }
+
+    /** Verificar senha sem limite e um oraculo melhor que o proprio login. */
+    public function test_troca_de_email_e_limitada_por_tentativas(): void
+    {
+        for ($tentativa = 1; $tentativa <= 5; $tentativa++) {
+            $this->actingAs($this->user)
+                ->patchJson('/api/perfil', [
+                    'email'       => 'nova@exemplo.com',
+                    'senha_atual' => "Chute#{$tentativa}",
+                ])
+                ->assertStatus(422);
+        }
+
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'email'       => 'nova@exemplo.com',
+                'senha_atual' => 'SenhaAtual#2026',
+            ])
+            ->assertStatus(429);
+
+        $this->assertSame('maria@exemplo.com', $this->user->fresh()->email);
+    }
+
+    /**
+     * O limite tem de valer por USUARIO, nao pelo e-mail enviado.
+     *
+     * Este teste existe por causa de um furo real: as rotas usavam o limitador
+     * 'autenticacao', cuja chave inclui o e-mail do corpo. No login isso esta
+     * certo, porque o e-mail identifica a conta alvo; aqui a conta alvo e quem
+     * esta autenticado, e o e-mail e escolhido por quem ataca. Bastava variar o
+     * e-mail a cada tentativa para ganhar um balde novo. A suite passava porque
+     * repetia o mesmo e-mail — foi o smoke test que pegou.
+     */
+    public function test_limite_nao_e_burlado_variando_o_email_a_cada_tentativa(): void
+    {
+        for ($tentativa = 1; $tentativa <= 5; $tentativa++) {
+            $this->actingAs($this->user)
+                ->patchJson('/api/perfil', [
+                    'email'       => "alvo{$tentativa}@exemplo.com",
+                    'senha_atual' => "Chute#{$tentativa}",
+                ])
+                ->assertStatus(422);
+        }
+
+        $this->actingAs($this->user)
+            ->patchJson('/api/perfil', [
+                'email'       => 'mais-um@exemplo.com',
+                'senha_atual' => 'OutroChute#9',
+            ])
+            ->assertStatus(429);
+
+        $this->assertSame('maria@exemplo.com', $this->user->fresh()->email);
+    }
+
+    /** O limite de uma conta nao pode derrubar a de outra pessoa. */
+    public function test_limite_de_um_usuario_nao_afeta_outro(): void
+    {
+        $outro = User::factory()->create([
+            'email'    => 'joao@exemplo.com',
+            'password' => Hash::make('SenhaDoJoao#2026'),
+        ]);
+
+        for ($tentativa = 1; $tentativa <= 5; $tentativa++) {
+            $this->actingAs($this->user)
+                ->patchJson('/api/perfil', [
+                    'email'       => 'nova@exemplo.com',
+                    'senha_atual' => "Chute#{$tentativa}",
+                ])
+                ->assertStatus(422);
+        }
+
+        $this->actingAs($outro)
+            ->patchJson('/api/perfil', ['name' => 'Joao Silva'])
+            ->assertOk();
     }
 
     // ----------------------------------------------------------------- senha

@@ -21,7 +21,9 @@ class PerfilController extends Controller
     public function update(UpdatePerfilRequest $request): UserResource
     {
         $usuario = $request->user();
-        $usuario->update($request->validated());
+        // `dadosDoPerfil()` e não `validated()`: `senha_atual` é prova de
+        // identidade, não coluna de `users`.
+        $usuario->update($request->dadosDoPerfil());
 
         return new UserResource($usuario->fresh());
     }
