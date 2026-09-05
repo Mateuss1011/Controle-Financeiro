@@ -39,3 +39,15 @@
 .cf-tabela__carregando {
   padding: var(--cf-esp-5);
 }
+
+/* Celula que carrega a identidade da linha: e por ela que se acha a linha
+   certa quando a tabela vira lista de cartoes no celular. */
+.cf-tabela__principal {
+  font-weight: var(--cf-peso-medio);
+  text-transform: lowercase;
+}
+
+.cf-tabela__principal::first-letter { text-transform: uppercase; }
+
+/* Ausencia de dado tem simbolo proprio: zero e um valor medido, ausencia nao. */
+.cf-tabela__vazio { color: var(--cf-texto-fraco); }

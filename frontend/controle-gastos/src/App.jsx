@@ -5,6 +5,7 @@ import DashboardPage from "./features/dashboard/DashboardPage";
 import LancamentosPage from "./features/lancamentos/LancamentosPage";
 import MetasPage from "./features/metas/MetasPage";
 import OrcamentoPage from "./features/orcamento/OrcamentoPage";
+import RelatoriosPage from "./features/relatorios/RelatoriosPage";
 import NaoEncontrada from "./pages/NaoEncontrada";
 import AuthProvider from "./features/auth/AuthProvider";
 import CadastroPage from "./features/auth/CadastroPage";
@@ -48,6 +49,7 @@ export default function App() {
               <Route path="/renda" element={<RendasPage />} />
               <Route path="/orcamento" element={<OrcamentoPage />} />
               <Route path="/metas" element={<MetasPage />} />
+              <Route path="/relatorios" element={<RelatoriosPage />} />
               {/* Endereço antigo, preservado para quem tiver o link salvo. */}
               <Route path="/controle" element={<Navigate to="/lancamentos" replace />} />
 

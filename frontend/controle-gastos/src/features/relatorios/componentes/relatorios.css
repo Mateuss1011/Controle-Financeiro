@@ -1,0 +1,220 @@
+/* ------------------------------------------------------------ Seletor */
+
+.cf-intervalo {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--cf-esp-2);
+}
+
+.cf-intervalo__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cf-intervalo__rotulo {
+  font-size: 10px;
+  font-weight: var(--cf-peso-medio);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-texto-suave);
+}
+
+.cf-intervalo__ate {
+  padding-bottom: var(--cf-esp-2);
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-intervalo__atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-esp-2);
+}
+
+/* ------------------------------------------------------------ Evolução */
+
+.cf-evolucao__grafico { width: 100%; }
+
+.cf-evolucao__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-esp-4);
+  margin-top: var(--cf-esp-3);
+  padding-top: var(--cf-esp-3);
+  border-top: 1px solid var(--cf-borda);
+}
+
+.cf-evolucao__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-evolucao__marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------- Composição */
+
+.cf-composicao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-esp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-composicao__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-2);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-composicao__faixa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-composicao__alvo {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-composicao__resultado {
+  margin-top: var(--cf-esp-2);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-composicao__resultado--estouro {
+  color: var(--cf-negativo-600);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-composicao__sem-renda {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+/* ------------------------------------------------------------ Destaques */
+
+.cf-destaques {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--cf-esp-4);
+  margin: 0;
+  padding: 0;
+}
+
+.cf-destaque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--cf-esp-3);
+  background: var(--cf-superficie-sutil);
+  border: 1px solid var(--cf-borda);
+  border-radius: var(--cf-raio-md);
+}
+
+.cf-destaque__rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-destaque__valor {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+}
+
+.cf-destaque__detalhe {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------- Ranking */
+
+.cf-ranking {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-ranking__item {
+  padding: var(--cf-esp-3) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-ranking__item:last-child { border-bottom: 0; }
+
+.cf-ranking__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-ranking__identidade {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-ranking__cor {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.cf-ranking__nome {
+  font-size: var(--cf-texto-sm);
+  font-weight: var(--cf-peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-ranking__rodape {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--cf-esp-2);
+  margin-top: var(--cf-esp-2);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A ressalva metodológica fecha a tela, igual às outras. */
+.cf-relatorio__ressalva {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+@media (max-width: 560px) {
+  .cf-intervalo { flex-wrap: wrap; }
+  .cf-intervalo__campo { flex: 1 1 130px; }
+  .cf-ranking__item { padding-left: var(--cf-esp-4); padding-right: var(--cf-esp-4); }
+}
