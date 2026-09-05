@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import RendasPage from "./features/rendas/RendasPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import LancamentosPage from "./features/lancamentos/LancamentosPage";
+import MetasPage from "./features/metas/MetasPage";
 import OrcamentoPage from "./features/orcamento/OrcamentoPage";
 import NaoEncontrada from "./pages/NaoEncontrada";
 import AuthProvider from "./features/auth/AuthProvider";
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="/lancamentos" element={<LancamentosPage />} />
               <Route path="/renda" element={<RendasPage />} />
               <Route path="/orcamento" element={<OrcamentoPage />} />
+              <Route path="/metas" element={<MetasPage />} />
               {/* Endereço antigo, preservado para quem tiver o link salvo. */}
               <Route path="/controle" element={<Navigate to="/lancamentos" replace />} />
 
