@@ -16,7 +16,7 @@ export const NAVEGACAO = [
   { para: "/dashboard",     rotulo: "Dashboard",   icone: FiGrid,     principal: true, disponivel: true },
   { para: "/lancamentos",   rotulo: "Lançamentos", icone: FiList,       principal: true, disponivel: true },
   { para: "/renda",         rotulo: "Renda",       icone: FiDollarSign, principal: true, disponivel: true },
-  { para: "/orcamento",     rotulo: "Orçamento",   icone: FiPieChart,   disponivel: false },
+  { para: "/orcamento",     rotulo: "Orçamento",   icone: FiPieChart,   disponivel: true },
   { para: "/metas",         rotulo: "Metas",       icone: FiTarget,     principal: true, disponivel: false },
   { para: "/relatorios",    rotulo: "Relatórios",  icone: FiFileText, disponivel: false },
   { para: "/categorias",    rotulo: "Categorias",  icone: FiTag,      disponivel: false },

@@ -1,0 +1,105 @@
+.cf-orcamentos__carregando {
+  padding: var(--cf-esp-5);
+}
+
+.cf-orcamentos {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cf-orcamento {
+  padding: var(--cf-esp-4) var(--cf-esp-5);
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-orcamento:last-child { border-bottom: 0; }
+
+.cf-orcamento__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-esp-3);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-orcamento__identidade {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  min-width: 0;
+}
+
+.cf-orcamento__categoria {
+  font-size: var(--cf-texto-md);
+  font-weight: var(--cf-peso-semi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Etiqueta visível, não só um ícone com title: no celular ninguém "passa o
+   mouse" para descobrir se o limite vale todo mês ou só neste. */
+.cf-orcamento__vigencia {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 1px var(--cf-esp-2);
+  font-size: 10px;
+  font-weight: var(--cf-peso-medio);
+  color: var(--cf-texto-suave);
+  background: var(--cf-ink-100);
+  border-radius: var(--cf-raio-full);
+  white-space: nowrap;
+}
+
+.cf-orcamento__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-esp-2);
+  flex-shrink: 0;
+}
+
+.cf-orcamento__valores {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-esp-2);
+  margin-bottom: var(--cf-esp-2);
+}
+
+.cf-orcamento__limite {
+  font-size: var(--cf-texto-sm);
+  color: var(--cf-texto-suave);
+}
+
+.cf-orcamento__restante {
+  margin-top: var(--cf-esp-2);
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-suave);
+}
+
+.cf-orcamento__restante--estouro {
+  color: var(--cf-negativo-600);
+  font-weight: var(--cf-peso-medio);
+}
+
+.cf-orcamento__explicacao {
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+}
+
+@media (max-width: 560px) {
+  .cf-orcamento { padding-left: var(--cf-esp-4); padding-right: var(--cf-esp-4); }
+
+  /* Com pouca largura, o status desce para não espremer o nome da categoria. */
+  .cf-orcamento__cabecalho {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--cf-esp-2);
+  }
+
+  .cf-orcamento__acoes { width: 100%; justify-content: space-between; }
+}
