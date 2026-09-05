@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GastoController;
+use App\Http\Controllers\OrcamentoController;
 use App\Http\Controllers\RegraController;
 use App\Http\Controllers\RendaController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('rendas', RendaController::class)
         ->only(['index', 'store', 'show', 'destroy'])
         ->parameters(['rendas' => 'renda']);
+
+    Route::apiResource('orcamentos', OrcamentoController::class)
+        ->only(['index', 'store', 'destroy']);
 
     Route::get('/regra', RegraController::class);
 
