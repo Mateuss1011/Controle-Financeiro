@@ -38,6 +38,7 @@ class RotasProtegidasTest extends TestCase
             'editar meta'        => ['PUT', '/api/metas/1'],
             'excluir meta'       => ['DELETE', '/api/metas/1'],
             'dashboard'          => ['GET', '/api/dashboard'],
+            'relatórios'         => ['GET', '/api/relatorios'],
             'regra 50/30/20'     => ['GET', '/api/regra'],
             'logout'             => ['POST', '/api/logout'],
             'me'                 => ['GET', '/api/me'],

@@ -7,6 +7,7 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\OrcamentoController;
 use App\Http\Controllers\RegraController;
+use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\RendaController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/regra', RegraController::class);
 
-    // Endpoint agregado: o Dashboard inteiro numa requisição só.
+    // Endpoints agregados: a tela inteira numa requisição só.
     Route::get('/dashboard', DashboardController::class);
+    Route::get('/relatorios', RelatorioController::class);
 });
