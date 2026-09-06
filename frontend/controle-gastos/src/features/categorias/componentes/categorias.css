@@ -111,6 +111,87 @@
   color: var(--cf-texto-fraco);
 }
 
+/* ------------------------------------------------- Arvore de subcategorias */
+/* A subcategoria vive dentro da mae, recolhida. Com ~26 categorias e ~84
+   subcategorias, uma lista plana de 110 linhas nao se le. */
+
+.cf-categoria-no {
+  border-bottom: 1px solid var(--cf-borda);
+}
+
+.cf-categoria-no:last-child { border-bottom: 0; }
+
+/* A borda passou para o no inteiro: a linha da mae nao a repete, senao
+   apareceria uma divisoria entre a mae e as filhas dela. */
+.cf-categoria-no > .cf-categoria { border-bottom: 0; }
+
+.cf-categoria__expandir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 15px;
+  color: var(--cf-texto-fraco);
+  background: none;
+  border: 0;
+  border-radius: var(--cf-raio-sm);
+  cursor: pointer;
+  transition: background-color var(--cf-transicao), color var(--cf-transicao),
+    transform var(--cf-transicao);
+}
+
+.cf-categoria__expandir:hover {
+  color: var(--cf-texto);
+  background: var(--cf-superficie-hover);
+}
+
+.cf-categoria__expandir--aberta { transform: rotate(90deg); }
+
+/* Espaco reservado nas categorias sem filhas: mantem os nomes alinhados. */
+.cf-categoria__expandir--vazio {
+  cursor: default;
+  background: none;
+}
+
+.cf-categoria__filhas-total {
+  flex-shrink: 0;
+  font-size: var(--cf-texto-xs);
+  color: var(--cf-texto-fraco);
+  white-space: nowrap;
+}
+
+/* A etiqueta de origem tem dois estados, e ambos aparecem: "do sistema" em
+   neutro, "sua" no acento da marca. Marcar so um dos lados deixaria o outro
+   parecendo indefinido. */
+.cf-categoria__padrao--sua {
+  color: var(--cf-brand-700);
+  background: var(--cf-brand-50);
+}
+
+.cf-subcategoria-lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--cf-superficie-sutil);
+}
+
+.cf-categoria--filha {
+  /* 24px do botao de expandir mais o gap: a filha comeca onde o nome da mae
+     comeca, e a indentacao passa a ser lida como hierarquia. */
+  padding-left: calc(var(--cf-esp-5) + 24px + var(--cf-esp-2));
+}
+
+.cf-categoria--filha:last-child { border-bottom: 0; }
+
+.cf-categoria--filha .cf-categoria__nome {
+  font-weight: var(--cf-peso-normal);
+}
+
 @media (max-width: 560px) {
   .cf-categoria {
     flex-direction: column;
@@ -121,4 +202,10 @@
   }
 
   .cf-categoria__direita { justify-content: space-between; }
+}
+
+@media (max-width: 560px) {
+  .cf-categoria--filha {
+    padding-left: calc(var(--cf-esp-4) + var(--cf-esp-3));
+  }
 }

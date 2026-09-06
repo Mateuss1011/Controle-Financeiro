@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { extrairErro } from "../../../lib/erros";
 import { Field, Input, Modal, Select } from "../../../components/ui";
@@ -28,9 +28,27 @@ const TIPOS = [
   },
 ];
 
-export default function FormularioCategoria({ aberto, categoria, onFechar, onSalvo }) {
+const ROTULO_DO_TIPO = Object.fromEntries(TIPOS.map((t) => [t.valor, t.rotulo]));
+
+/**
+ * Criação e edição de categoria — principal ou subcategoria.
+ *
+ * A escolha da mãe é o que decide o resto do formulário: uma subcategoria NÃO
+ * escolhe tipo, porque herda o da mãe. Deixar o campo lá, editável, permitiria
+ * "Moradia = necessidade" com "Aluguel = desejo" — dois gastos da mesma conta
+ * em faixas diferentes da regra 50/30/20.
+ */
+export default function FormularioCategoria({
+  aberto,
+  categoria,
+  paiId = null,
+  principais = [],
+  onFechar,
+  onSalvo,
+}) {
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("necessidade");
+  const [maeId, setMaeId] = useState("");
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
 
@@ -42,7 +60,32 @@ export default function FormularioCategoria({ aberto, categoria, onFechar, onSal
     setErro(null);
     setNome(categoria?.nome ?? "");
     setTipo(categoria?.tipo ?? "necessidade");
-  }, [aberto, categoria]);
+    setMaeId(String(categoria?.categoria_pai_id ?? paiId ?? ""));
+  }, [aberto, categoria, paiId]);
+
+  /*
+   * Só categorias principais podem ser mãe, e nunca a própria categoria que
+   * está sendo editada — o backend recusa as duas coisas, mas oferecer a opção
+   * seria convidar ao erro.
+   */
+  const maes = useMemo(
+    () =>
+      (principais ?? []).filter(
+        (c) => !c.categoria_pai_id && String(c.id) !== String(categoria?.id ?? "")
+      ),
+    [principais, categoria]
+  );
+
+  const mae = useMemo(
+    () => maes.find((c) => String(c.id) === String(maeId)),
+    [maes, maeId]
+  );
+
+  // Uma categoria que já tem filhas não pode virar subcategoria: viraria um
+  // terceiro nível. Em vez de deixar tentar e devolver erro, o campo fica
+  // travado com a explicação.
+  const temFilhas = (categoria?.subcategorias ?? []).length > 0;
+  const ehSubcategoria = maeId !== "";
 
   const podeSalvar = nome.trim() !== "";
   const explicacao = TIPOS.find((t) => t.valor === tipo)?.ajuda;
@@ -51,7 +94,14 @@ export default function FormularioCategoria({ aberto, categoria, onFechar, onSal
     setErro(null);
     setSalvando(true);
 
-    const corpo = { nome: nome.trim(), tipo };
+    // `tipo` só vai quando a categoria é principal. Na subcategoria ele é
+    // ignorado pelo backend de qualquer forma, e mandá-lo sugeriria que a
+    // escolha existe.
+    const corpo = {
+      nome: nome.trim(),
+      categoria_pai_id: ehSubcategoria ? Number(maeId) : null,
+      ...(ehSubcategoria ? {} : { tipo }),
+    };
 
     try {
       if (editando) {
@@ -60,7 +110,15 @@ export default function FormularioCategoria({ aberto, categoria, onFechar, onSal
         await api.post("/categorias", corpo);
       }
 
-      onSalvo(editando ? "Categoria atualizada." : "Categoria criada.");
+      onSalvo(
+        editando
+          ? ehSubcategoria
+            ? "Subcategoria atualizada."
+            : "Categoria atualizada."
+          : ehSubcategoria
+            ? "Subcategoria criada."
+            : "Categoria criada."
+      );
     } catch (error) {
       setErro(extrairErro(error));
     } finally {
@@ -68,11 +126,19 @@ export default function FormularioCategoria({ aberto, categoria, onFechar, onSal
     }
   }
 
+  const titulo = editando
+    ? ehSubcategoria
+      ? "Editar subcategoria"
+      : "Editar categoria"
+    : ehSubcategoria
+      ? "Nova subcategoria"
+      : "Nova categoria";
+
   return (
     <Modal
       aberto={aberto}
       onFechar={onFechar}
-      titulo={editando ? "Editar categoria" : "Nova categoria"}
+      titulo={titulo}
       rotuloConfirmar={editando ? "Salvar alterações" : "Criar categoria"}
       onConfirmar={salvar}
       confirmarDesabilitado={!podeSalvar}
@@ -91,29 +157,67 @@ export default function FormularioCategoria({ aberto, categoria, onFechar, onSal
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               maxLength={100}
-              placeholder="Farmácia"
+              placeholder={ehSubcategoria ? "Energia elétrica" : "Farmácia"}
               autoFocus
               {...a}
             />
           )}
         </Field>
 
-        <Field label="Tipo" obrigatorio erro={erro?.campos?.tipo} ajuda={explicacao}>
+        <Field
+          label="Categoria mãe"
+          erro={erro?.campos?.categoria_pai_id}
+          ajuda={
+            temFilhas
+              ? "Esta categoria tem subcategorias, então ela própria não pode virar uma."
+              : "Deixe em branco para criar uma categoria principal."
+          }
+        >
           {(a) => (
-            <Select value={tipo} onChange={(e) => setTipo(e.target.value)} {...a}>
-              {TIPOS.map((opcao) => (
-                <option key={opcao.valor} value={opcao.valor}>
-                  {opcao.rotulo}
+            <Select
+              value={maeId}
+              onChange={(e) => setMaeId(e.target.value)}
+              disabled={temFilhas}
+              {...a}
+            >
+              <option value="">Nenhuma — é uma categoria principal</option>
+              {maes.map((opcao) => (
+                <option key={opcao.id} value={opcao.id}>
+                  {opcao.nome}
                 </option>
               ))}
             </Select>
           )}
         </Field>
 
-        {editando && (
+        {/* O tipo desaparece na subcategoria em vez de ficar desabilitado: um
+            campo travado com um valor dentro dá a entender que ele foi
+            escolhido aqui, e não herdado. */}
+        {ehSubcategoria ? (
+          <p className="cf-categorias-tela__ressalva">
+            {mae
+              ? `Herda a faixa da categoria mãe: ${ROTULO_DO_TIPO[mae.tipo] ?? mae.tipo}.`
+              : "A faixa da regra 50/30/20 é herdada da categoria mãe."}
+          </p>
+        ) : (
+          <Field label="Tipo" obrigatorio erro={erro?.campos?.tipo} ajuda={explicacao}>
+            {(a) => (
+              <Select value={tipo} onChange={(e) => setTipo(e.target.value)} {...a}>
+                {TIPOS.map((opcao) => (
+                  <option key={opcao.valor} value={opcao.valor}>
+                    {opcao.rotulo}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+
+        {editando && !ehSubcategoria && (
           <p className="cf-categorias-tela__ressalva">
             Mudar o tipo reclassifica todos os lançamentos desta categoria na
-            regra 50/30/20, inclusive os de meses anteriores.
+            regra 50/30/20, inclusive os das subcategorias e os de meses
+            anteriores.
           </p>
         )}
       </Stack>
