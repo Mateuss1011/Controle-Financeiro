@@ -142,9 +142,9 @@ A aplicação fica em **http://localhost:5173** e a API em
 ## Demonstração
 
 Existe um seeder que popula a base com uma conta fictícia e quatro meses de
-histórico — renda, 143 lançamentos espalhados pela hierarquia de categorias,
-orçamentos nos três estados (dentro do limite, em atenção e estourado) e metas
-em andamento, quase concluída e concluída.
+histórico — renda, cerca de 140 lançamentos espalhados pela hierarquia de
+categorias, orçamentos nos três estados (dentro do limite, em atenção e
+estourado) e metas em andamento, quase concluída e concluída.
 
 ```bash
 cd backend/controle-financeiro
