@@ -578,3 +578,49 @@ describe("Categorias — dois níveis, e só dois", () => {
     );
   });
 });
+
+describe("Categorias — teclado", () => {
+  /**
+   * A árvore tem de funcionar sem mouse. O gesto é um `<button>` de verdade,
+   * então Enter e espaço o acionam — este teste é o que impede alguém de
+   * trocá-lo depois por uma `<div onClick>`, que pareceria igual e não seria.
+   */
+  it("expande e recolhe com Enter e com espaço", async () => {
+    montar();
+
+    await screen.findByText("Alimentação");
+    const botao = screen.getByRole("button", {
+      name: "Expandir subcategorias de Alimentação",
+    });
+
+    botao.focus();
+    expect(botao).toHaveFocus();
+
+    await userEvent.keyboard("{Enter}");
+    expect(botao).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Supermercado")).toBeVisible();
+
+    await userEvent.keyboard(" ");
+    expect(botao).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByText("Supermercado")).not.toBeVisible();
+
+    // O foco não se perde no caminho: quem abriu continua onde estava.
+    expect(botao).toHaveFocus();
+  });
+
+  it("alcança o gesto pela navegação sequencial", async () => {
+    montar();
+
+    await screen.findByText("Alimentação");
+
+    const botao = screen.getByRole("button", {
+      name: "Expandir subcategorias de Alimentação",
+    });
+
+    // Tab a partir do "Nova categoria" do cabeçalho chega ao primeiro nó.
+    screen.getByRole("button", { name: /Nova categoria/ }).focus();
+    await userEvent.tab();
+
+    expect(botao).toHaveFocus();
+  });
+});

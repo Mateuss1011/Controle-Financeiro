@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  caminhoDaCategoria,
   competenciaAtual,
   formatarCompetencia,
   formatarCompetenciaCurta,
@@ -113,5 +114,25 @@ describe("competência", () => {
 
   it("gera a competência atual no formato da API", () => {
     expect(competenciaAtual()).toMatch(/^\d{4}-\d{2}$/);
+  });
+});
+
+describe("caminhoDaCategoria", () => {
+  it("mostra a mãe antes da filha", () => {
+    expect(
+      caminhoDaCategoria({ nome: "Aluguel", categoria_pai: "Moradia" })
+    ).toBe("Moradia › Aluguel");
+  });
+
+  it("mostra só o nome quando a categoria é principal", () => {
+    expect(caminhoDaCategoria({ nome: "Moradia" })).toBe("Moradia");
+    expect(caminhoDaCategoria({ nome: "Moradia", categoria_pai: null })).toBe("Moradia");
+  });
+
+  /** Categoria ausente é caso real: o chamador decide o texto de fallback. */
+  it("devolve null sem categoria", () => {
+    expect(caminhoDaCategoria(null)).toBeNull();
+    expect(caminhoDaCategoria(undefined)).toBeNull();
+    expect(caminhoDaCategoria({})).toBeNull();
   });
 });

@@ -503,3 +503,40 @@ describe("Dashboard — reserva e metas", () => {
     expect(container.querySelector(".cf-reserva")).not.toBeInTheDocument();
   });
 });
+
+/*
+ * Etapa K: o donut soma pela raiz, então a lista abaixo dele precisa dizer de
+ * qual raiz cada lançamento veio. Sem isso o cartão mostraria "Energia
+ * elétrica" ao lado de uma fatia chamada "Moradia" — o mesmo dinheiro com dois
+ * nomes na mesma tela.
+ */
+describe("Dashboard — categoria e subcategoria", () => {
+  it("mostra o caminho da mãe nos últimos lançamentos", async () => {
+    responder(
+      respostaDashboard({
+        ultimos_lancamentos: [
+          {
+            id: 8,
+            descricao: "Conta de luz",
+            valor: 150,
+            data_lancamento: "2026-09-06",
+            categoria: {
+              id: 77,
+              nome: "Energia elétrica",
+              tipo: "necessidade",
+              rotulo_tipo: "Necessidades",
+              global: true,
+              categoria_pai_id: 2,
+              subcategoria: true,
+              categoria_pai: "Moradia",
+            },
+            criado_em: null,
+          },
+        ],
+      })
+    );
+    montar();
+
+    expect(await screen.findByText(/Moradia › Energia elétrica/)).toBeInTheDocument();
+  });
+});

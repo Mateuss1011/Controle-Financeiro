@@ -409,8 +409,9 @@ function impedimentoParaExcluir(categoria) {
       <p>
         <strong>{categoria.nome}</strong> tem {plural(lancamentos, "lançamento", "lançamentos")}
         {nasFilhas ? " (contando os das subcategorias)" : ""} e não pode ser
-        excluída. Reclassifique esses lançamentos em outra{" "}
-        {eSubcategoria ? "subcategoria" : "categoria"} antes de tentar de novo.
+        excluída. {lancamentos === 1 ? "Reclassifique esse lançamento" : "Reclassifique esses lançamentos"}{" "}
+        em outra {eSubcategoria ? "subcategoria" : "categoria"} antes de tentar
+        de novo.
       </p>
     );
   }

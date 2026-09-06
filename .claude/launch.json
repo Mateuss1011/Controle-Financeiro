@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "frontend/controle-gastos",
       "port": 5173
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["artisan", "serve", "--port=8000"],
+      "cwd": "backend/controle-financeiro",
+      "port": 8000
     }
   ]
 }

@@ -208,4 +208,11 @@
   .cf-categoria--filha {
     padding-left: calc(var(--cf-esp-4) + var(--cf-esp-3));
   }
+
+  /* Numa tela de 375px o nome e o que importa, e ele estava sendo cortado
+     para caber o contador ao lado. O numero de filhas fica evidente ao
+     expandir; o nome, se truncado, nao volta. */
+  .cf-categoria__filhas-total { display: none; }
+
+  .cf-categoria__nome { white-space: normal; }
 }

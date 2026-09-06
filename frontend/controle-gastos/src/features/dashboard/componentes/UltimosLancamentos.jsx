@@ -1,5 +1,5 @@
 import { Badge, Card, EmptyState, Money } from "../../../components/ui";
-import { formatarData } from "../../../lib/format";
+import { caminhoDaCategoria, formatarData } from "../../../lib/format";
 import "./dashboard.css";
 
 const ROTULO_DO_TIPO = {
@@ -40,7 +40,9 @@ export default function UltimosLancamentos({ lancamentos, onVerTodos, onAdiciona
               <span className="cf-lancamento__descricao">{lancamento.descricao}</span>
               <span className="cf-lancamento__meta">
                 {formatarData(lancamento.data_lancamento)}
-                {lancamento.categoria?.nome && <> · {lancamento.categoria.nome}</>}
+                {caminhoDaCategoria(lancamento.categoria) && (
+                  <> · {caminhoDaCategoria(lancamento.categoria)}</>
+                )}
               </span>
             </div>
 

@@ -99,3 +99,19 @@ export function competenciaAtual() {
   const hoje = new Date();
   return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 }
+
+/**
+ * Caminho da categoria de um lancamento: "Moradia > Aluguel" quando ele esta
+ * numa subcategoria, so o nome quando esta direto na principal.
+ *
+ * Mostrar so "Aluguel" esconderia a informacao que o Dashboard usa para somar
+ * e que o orcamento de Moradia consome — e as duas telas passariam a chamar o
+ * mesmo dinheiro por nomes diferentes.
+ */
+export function caminhoDaCategoria(categoria) {
+  if (!categoria?.nome) return null;
+
+  return categoria.categoria_pai
+    ? `${categoria.categoria_pai} › ${categoria.nome}`
+    : categoria.nome;
+}
