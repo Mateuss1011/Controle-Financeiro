@@ -96,17 +96,25 @@ export default function FiltrosLancamentos({ filtros, categorias, onMudar, onLim
           ))}
         </Select>
 
+        {/*
+          * O filtro é por categoria PRINCIPAL, e traz a árvore inteira: escolher
+          * "Moradia" devolve o que está direto nela e o que está em qualquer
+          * subcategoria. Filtrar por subcategoria isolada é uma pergunta bem mais
+          * rara que "quanto foi para moradia neste mês".
+          */}
         <Select
           aria-label="Categoria"
           value={filtros.categoria_id ?? ""}
           onChange={(e) => onMudar({ categoria_id: e.target.value, pagina: 1 })}
         >
           <option value="">Todas as categorias</option>
-          {(categorias ?? []).map((categoria) => (
-            <option key={categoria.id} value={categoria.id}>
-              {categoria.nome}
-            </option>
-          ))}
+          {(categorias ?? [])
+            .filter((categoria) => !categoria.categoria_pai_id)
+            .map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nome}
+              </option>
+            ))}
         </Select>
 
         <Select

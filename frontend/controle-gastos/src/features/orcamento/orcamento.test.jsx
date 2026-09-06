@@ -58,13 +58,13 @@ function resposta({ itens, resumo = {} } = {}) {
   };
 }
 
-function montar() {
+function montar(categorias = CATEGORIAS) {
   return render(
     <MemoryRouter>
       <ToastProvider>
         <GastosContext.Provider
           value={{
-            gastos: [], categorias: CATEGORIAS,
+            gastos: [], categorias,
             carregarGastos: vi.fn(), carregarCategorias: vi.fn(),
             deletarGasto: vi.fn(), atualizarGasto: vi.fn(),
           }}
@@ -357,5 +357,67 @@ describe("Orçamento — período e consistência", () => {
 
     expect(screen.getByRole("button", { name: "Editar orçamento de Alimentação" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Excluir orçamento de Lazer" })).toBeInTheDocument();
+  });
+});
+
+/*
+ * Etapa K: o orçamento vive só na categoria principal. Os gastos lançados nas
+ * subcategorias consomem o limite da mãe — oferecer a filha no select criaria
+ * dois limites concorrentes para o mesmo dinheiro.
+ */
+describe("Orçamento — hierarquia de categorias", () => {
+  const COM_FILHAS = [
+    {
+      id: 1,
+      nome: "Alimentação",
+      tipo: "necessidade",
+      rotulo_tipo: "Necessidades",
+      global: true,
+      categoria_pai_id: null,
+      subcategorias: [
+        {
+          id: 5,
+          nome: "Supermercado",
+          tipo: "necessidade",
+          rotulo_tipo: "Necessidades",
+          global: true,
+          categoria_pai_id: 1,
+          subcategoria: true,
+        },
+      ],
+    },
+    {
+      id: 2,
+      nome: "Lazer",
+      tipo: "desejo",
+      rotulo_tipo: "Desejos",
+      global: true,
+      categoria_pai_id: null,
+      subcategorias: [],
+    },
+  ];
+
+  it("só oferece categorias principais no select", async () => {
+    montar(COM_FILHAS);
+
+    await aguardarLista();
+    await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
+
+    const modal = await screen.findByRole("dialog");
+    const select = within(modal).getByLabelText(/^Categoria/);
+    const opcoes = [...select.querySelectorAll("option")].map((o) => o.textContent);
+
+    expect(opcoes).toEqual(["Selecione uma categoria", "Alimentação", "Lazer"]);
+    expect(opcoes).not.toContain("Supermercado");
+  });
+
+  it("explica que o limite soma as subcategorias", async () => {
+    montar(COM_FILHAS);
+
+    await aguardarLista();
+    await userEvent.click(screen.getByRole("button", { name: /Novo orçamento/ }));
+
+    const modal = await screen.findByRole("dialog");
+    expect(within(modal).getByText(/somando as subcategorias dela/)).toBeInTheDocument();
   });
 });

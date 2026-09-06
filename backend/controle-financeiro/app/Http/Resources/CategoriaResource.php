@@ -21,6 +21,11 @@ class CategoriaResource extends JsonResource
             'categoria_pai_id' => $this->categoria_pai_id,
             'subcategoria'     => $this->ehSubcategoria(),
 
+            // Nome da mãe, quando a relação vier carregada. Sem ele, um
+            // lançamento em "Aluguel" apareceria na lista como "Aluguel" e
+            // ninguém saberia de qual categoria ele veio.
+            'categoria_pai'    => $this->whenLoaded('pai', fn () => $this->pai?->nome),
+
             // Só na listagem, que é a única consulta que carrega as contagens.
             //
             // `total_lancamentos` é ACUMULADO: numa categoria principal soma os

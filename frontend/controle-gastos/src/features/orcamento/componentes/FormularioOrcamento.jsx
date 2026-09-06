@@ -116,11 +116,15 @@ export default function FormularioOrcamento({
               {...a}
             >
               <option value="">Selecione uma categoria</option>
-              {(categorias ?? []).map((categoria) => (
-                <option key={categoria.id} value={categoria.id}>
-                  {categoria.nome}
-                </option>
-              ))}
+              {/* Só categorias principais: o orçamento vive na mãe, e os
+                  gastos das subcategorias consomem o limite dela. */}
+              {(categorias ?? [])
+                .filter((categoria) => !categoria.categoria_pai_id)
+                .map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
+                    {categoria.nome}
+                  </option>
+                ))}
             </Select>
           )}
         </Field>
@@ -129,7 +133,7 @@ export default function FormularioOrcamento({
           label="Limite mensal"
           obrigatorio
           erro={erro?.campos?.valor_limite}
-          ajuda="Quanto você quer no máximo gastar nesta categoria."
+          ajuda="Quanto você quer no máximo gastar nesta categoria, somando as subcategorias dela."
         >
           {(a) => (
             <InputMoeda

@@ -52,7 +52,7 @@ export default function ListaLancamentos({
                 <div className="cf-item__info">
                   <span className="cf-item__descricao">{lancamento.descricao}</span>
                   <span className="cf-item__meta">
-                    {lancamento.categoria?.nome ?? "Sem categoria"}
+                    {caminhoDaCategoria(lancamento.categoria)}
                     {!grupo.dia && <> · {formatarData(lancamento.data_lancamento)}</>}
                   </span>
                 </div>
@@ -93,6 +93,20 @@ export default function ListaLancamentos({
       ))}
     </div>
   );
+}
+
+/**
+ * "Moradia › Aluguel" quando o lançamento está numa subcategoria.
+ *
+ * Mostrar só "Aluguel" esconderia a informação que o Dashboard usa para somar:
+ * o gasto consome o orçamento de Moradia, e a lista precisa dizer isso.
+ */
+function caminhoDaCategoria(categoria) {
+  if (!categoria?.nome) return "Sem categoria";
+
+  return categoria.categoria_pai
+    ? `${categoria.categoria_pai} › ${categoria.nome}`
+    : categoria.nome;
 }
 
 function BotaoAcao({ children, rotulo, onClick, perigo = false }) {

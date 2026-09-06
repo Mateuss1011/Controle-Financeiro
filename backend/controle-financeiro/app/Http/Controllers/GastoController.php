@@ -32,7 +32,9 @@ class GastoController extends Controller
             'por_pagina'  => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $query = $this->comFiltros(Gasto::with('categoria'), $validado);
+        // `categoria.pai` junto: a lista mostra o caminho "Moradia > Aluguel", e
+        // sem o pai carregado seria uma consulta por linha.
+        $query = $this->comFiltros(Gasto::with('categoria.pai'), $validado);
 
         /*
          * O total do RESULTADO FILTRADO, não o da página.
@@ -67,8 +69,22 @@ class GastoController extends Controller
             $query->entre($filtros['inicio'], $filtros['fim']);
         }
 
+        /*
+         * Filtrar por "Moradia" traz a ÁRVORE: o que está direto nela e o que
+         * está em qualquer subcategoria dela. Filtrar pelo id exato deixaria de
+         * fora justamente os lançamentos mais específicos, e a lista mostraria
+         * menos do que o Dashboard soma para a mesma categoria.
+         *
+         * Filtrar por uma subcategoria continua funcionando e devolve só ela.
+         */
         if (! empty($filtros['categoria_id'])) {
-            $query->where('categoria_id', $filtros['categoria_id']);
+            $id = (int) $filtros['categoria_id'];
+
+            $query->whereIn('categoria_id', function ($sub) use ($id) {
+                $sub->select('id')->from('categorias')
+                    ->where('id', $id)
+                    ->orWhere('categoria_pai_id', $id);
+            });
         }
 
         if (! empty($filtros['tipo'])) {
@@ -86,7 +102,7 @@ class GastoController extends Controller
     {
         $gasto = Gasto::create($request->validated());
 
-        return (new GastoResource($gasto->load('categoria')))
+        return (new GastoResource($gasto->load('categoria.pai')))
             ->response()
             ->setStatusCode(201);
     }
@@ -95,7 +111,7 @@ class GastoController extends Controller
     {
         $this->authorize('view', $gasto);
 
-        return new GastoResource($gasto->load('categoria'));
+        return new GastoResource($gasto->load('categoria.pai'));
     }
 
     public function update(UpdateGastoRequest $request, Gasto $gasto): GastoResource
@@ -104,7 +120,7 @@ class GastoController extends Controller
 
         $gasto->update($request->validated());
 
-        return new GastoResource($gasto->load('categoria'));
+        return new GastoResource($gasto->load('categoria.pai'));
     }
 
     public function destroy(Gasto $gasto): JsonResponse

@@ -4,6 +4,7 @@ import { extrairErro } from "../../../lib/erros";
 import { Badge, Field, Input, InputMoeda, Modal, Select } from "../../../components/ui";
 import { Stack } from "../../../components/layout";
 import { useGastos } from "../../../Context/gastosContext";
+import { useSelecaoDeCategoria } from "../../categorias/useSelecaoDeCategoria";
 
 const HOJE = () => new Date().toISOString().slice(0, 10);
 
@@ -11,7 +12,6 @@ const VAZIO = {
   descricao: "",
   valor: "",
   data: HOJE(),
-  categoria_id: "",
 };
 
 const ROTULO_DO_TIPO = {
@@ -29,6 +29,7 @@ const ROTULO_DO_TIPO = {
  */
 export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo }) {
   const { categorias } = useGastos();
+  const selecao = useSelecaoDeCategoria(categorias);
 
   const [campos, setCampos] = useState(VAZIO);
   const [erro, setErro] = useState(null);
@@ -46,25 +47,26 @@ export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo 
             descricao: gasto.descricao ?? "",
             valor: gasto.valor != null ? String(gasto.valor) : "",
             data: gasto.data_lancamento ?? HOJE(),
-            categoria_id: gasto.categoria?.id != null ? String(gasto.categoria.id) : "",
           }
         : { ...VAZIO, data: HOJE() }
     );
+
+    // Um id só reconstrói os dois selects: se ele for de uma subcategoria, a
+    // categoria vem do pai. Vale igual para editar e para duplicar.
+    selecao.definirPeloIdGravado(gasto?.categoria?.id ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aberto, gasto]);
 
   const definir = (campo) => (evento) =>
     setCampos((atuais) => ({ ...atuais, [campo]: evento.target.value }));
-
-  const categoriaEscolhida = categorias?.find(
-    (c) => String(c.id) === String(campos.categoria_id)
-  );
 
   const podeSalvar =
     campos.descricao.trim() !== "" &&
     campos.valor !== "" &&
     Number(campos.valor) > 0 &&
     campos.data !== "" &&
-    campos.categoria_id !== "";
+    // A subcategoria é opcional; a categoria, não.
+    selecao.categoriaId !== "";
 
   async function salvar() {
     setErro(null);
@@ -74,7 +76,7 @@ export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo 
       descricao: campos.descricao.trim(),
       valor: Number(campos.valor),
       data: campos.data,
-      categoria_id: Number(campos.categoria_id),
+      categoria_id: Number(selecao.categoriaIdParaEnviar),
     };
 
     try {
@@ -140,15 +142,19 @@ export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo 
           obrigatorio
           erro={erro?.campos?.categoria_id}
           ajuda={
-            categoriaEscolhida
-              ? `Entra na faixa "${ROTULO_DO_TIPO[categoriaEscolhida.tipo]}" da regra 50/30/20.`
+            selecao.categoriaEscolhida
+              ? `Entra na faixa "${ROTULO_DO_TIPO[selecao.tipo]}" da regra 50/30/20.`
               : undefined
           }
         >
           {(a) => (
-            <Select value={campos.categoria_id} onChange={definir("categoria_id")} {...a}>
+            <Select
+              value={selecao.categoriaId}
+              onChange={(e) => selecao.definirCategoria(e.target.value)}
+              {...a}
+            >
               <option value="">Selecione uma categoria</option>
-              {(categorias ?? []).map((categoria) => (
+              {selecao.principais.map((categoria) => (
                 <option key={categoria.id} value={categoria.id}>
                   {categoria.nome}
                 </option>
@@ -157,12 +163,41 @@ export default function FormularioLancamento({ aberto, gasto, onFechar, onSalvo 
           )}
         </Field>
 
+        {/*
+          * O segundo select só aparece quando há o que escolher.
+          *
+          * E a subcategoria é opcional de propósito: um gasto genérico entra
+          * direto em "Moradia", sem obrigar ninguém a inventar uma subcategoria
+          * "Outros" só para preencher o campo.
+          */}
+        {selecao.subcategorias.length > 0 && (
+          <Field
+            label="Subcategoria"
+            ajuda="Opcional. Deixe em branco para lançar direto na categoria."
+          >
+            {(a) => (
+              <Select
+                value={selecao.subcategoriaId}
+                onChange={(e) => selecao.definirSubcategoria(e.target.value)}
+                {...a}
+              >
+                <option value="">Sem subcategoria</option>
+                {selecao.subcategorias.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.nome}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+
         {/* Mostrar a faixa antes de salvar evita a surpresa de descobrir só no
             Dashboard que o gasto entrou em "Desejos". */}
-        {categoriaEscolhida && (
+        {selecao.categoriaEscolhida && (
           <div>
-            <Badge tom={categoriaEscolhida.tipo} ponto>
-              {ROTULO_DO_TIPO[categoriaEscolhida.tipo]}
+            <Badge tom={selecao.tipo} ponto>
+              {ROTULO_DO_TIPO[selecao.tipo]}
             </Badge>
           </div>
         )}

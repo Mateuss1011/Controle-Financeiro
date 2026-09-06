@@ -45,14 +45,14 @@ function respostaLista({ dados = [gasto(1), gasto(2)], total = 200, meta = {} } 
   };
 }
 
-function montar(rota = "/lancamentos") {
+function montar(rota = "/lancamentos", categorias = CATEGORIAS) {
   return render(
     <MemoryRouter initialEntries={[rota]}>
       <ToastProvider>
         <GastosContext.Provider
           value={{
             gastos: [],
-            categorias: CATEGORIAS,
+            categorias,
             carregarGastos: vi.fn(),
             carregarCategorias: vi.fn(),
             deletarGasto: vi.fn(),
@@ -433,5 +433,273 @@ describe("Lançamentos — consistência", () => {
     expect(screen.getByRole("button", { name: "Editar Lançamento 1" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Duplicar Lançamento 2" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Excluir Lançamento 2" })).toBeInTheDocument();
+  });
+});
+
+/*
+ * Etapa K: a categoria virou uma árvore de dois níveis. O lançamento continua
+ * gravando UMA coluna (`categoria_id`), mas a interface passa a decidir entre
+ * a mãe e a filha — e a lista precisa dizer de qual mãe a filha veio.
+ */
+const sub = (id, nome, paiId, tipo) => ({
+  id,
+  nome,
+  tipo,
+  rotulo_tipo: tipo,
+  global: true,
+  categoria_pai_id: paiId,
+  subcategoria: true,
+});
+
+const HIERARQUIA = [
+  {
+    id: 1,
+    nome: "Alimentação",
+    tipo: "necessidade",
+    rotulo_tipo: "Necessidades",
+    global: true,
+    categoria_pai_id: null,
+    subcategoria: false,
+    subcategorias: [],
+  },
+  {
+    id: 10,
+    nome: "Moradia",
+    tipo: "necessidade",
+    rotulo_tipo: "Necessidades",
+    global: true,
+    categoria_pai_id: null,
+    subcategoria: false,
+    subcategorias: [
+      sub(11, "Aluguel", 10, "necessidade"),
+      sub(12, "Energia elétrica", 10, "necessidade"),
+    ],
+  },
+  {
+    id: 20,
+    nome: "Entretenimento",
+    tipo: "desejo",
+    rotulo_tipo: "Desejos",
+    global: true,
+    categoria_pai_id: null,
+    subcategoria: false,
+    subcategorias: [sub(21, "Cinema", 20, "desejo")],
+  },
+];
+
+/** Como o backend devolve a categoria de um gasto que está numa filha. */
+const CATEGORIA_ALUGUEL = {
+  id: 11,
+  nome: "Aluguel",
+  tipo: "necessidade",
+  rotulo_tipo: "Necessidades",
+  global: true,
+  categoria_pai_id: 10,
+  subcategoria: true,
+  categoria_pai: "Moradia",
+};
+
+const CATEGORIA_MORADIA = {
+  id: 10,
+  nome: "Moradia",
+  tipo: "necessidade",
+  rotulo_tipo: "Necessidades",
+  global: true,
+  categoria_pai_id: null,
+  subcategoria: false,
+};
+
+async function abrirNovoLancamento() {
+  await screen.findByText("Lançamento 1");
+  await userEvent.click(screen.getByRole("button", { name: /Novo lançamento/ }));
+
+  return screen.findByRole("dialog");
+}
+
+async function preencherObrigatorios(modal, descricao = "Aluguel de setembro") {
+  await userEvent.type(within(modal).getByLabelText(/Descrição/), descricao);
+  await userEvent.type(within(modal).getByLabelText(/^Valor/), "900");
+}
+
+describe("Lançamentos — categoria e subcategoria", () => {
+  it("mostra o caminho da mãe quando o lançamento está numa subcategoria", async () => {
+    api.get.mockResolvedValue(
+      respostaLista({ dados: [gasto(1, { categoria: CATEGORIA_ALUGUEL })] })
+    );
+    montar("/lancamentos", HIERARQUIA);
+
+    expect(await screen.findByText("Moradia › Aluguel")).toBeInTheDocument();
+  });
+
+  it("mostra só o nome quando o lançamento está direto na categoria", async () => {
+    api.get.mockResolvedValue(
+      respostaLista({ dados: [gasto(1, { categoria: CATEGORIA_MORADIA })] })
+    );
+    const { container } = montar("/lancamentos", HIERARQUIA);
+
+    await screen.findByText("Lançamento 1");
+    expect(container.querySelector(".cf-item__meta")).toHaveTextContent(/^Moradia/);
+    expect(screen.queryByText(/›/)).not.toBeInTheDocument();
+  });
+
+  it("só oferece o segundo select quando a categoria escolhida tem filhas", async () => {
+    montar("/lancamentos", HIERARQUIA);
+    const modal = await abrirNovoLancamento();
+
+    // Nada escolhido: nem categoria, nem campo de subcategoria.
+    expect(within(modal).queryByLabelText(/^Subcategoria/)).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "1");
+    expect(within(modal).queryByLabelText(/^Subcategoria/)).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "10");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toBeInTheDocument();
+  });
+
+  it("envia o id da subcategoria quando ela é escolhida", async () => {
+    api.post.mockResolvedValue({ data: { data: gasto(9) } });
+    montar("/lancamentos", HIERARQUIA);
+
+    const modal = await abrirNovoLancamento();
+    await preencherObrigatorios(modal);
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "10");
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Subcategoria/), "11");
+    await userEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith(
+        "/gastos",
+        expect.objectContaining({ categoria_id: 11 })
+      )
+    );
+  });
+
+  /** Subcategoria é opcional: "Sem subcategoria" grava o id da mãe. */
+  it("envia o id da categoria quando nenhuma subcategoria é escolhida", async () => {
+    api.post.mockResolvedValue({ data: { data: gasto(9) } });
+    montar("/lancamentos", HIERARQUIA);
+
+    const modal = await abrirNovoLancamento();
+    await preencherObrigatorios(modal, "Condomínio");
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "10");
+    await userEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith(
+        "/gastos",
+        expect.objectContaining({ categoria_id: 10 })
+      )
+    );
+  });
+
+  /**
+   * Sem isso o formulário guardaria "Aluguel" com "Entretenimento" escolhido, e
+   * o backend receberia uma combinação que a tela nunca mostrou.
+   */
+  it("trocar de categoria limpa a subcategoria escolhida", async () => {
+    api.post.mockResolvedValue({ data: { data: gasto(9) } });
+    montar("/lancamentos", HIERARQUIA);
+
+    const modal = await abrirNovoLancamento();
+    await preencherObrigatorios(modal, "Sessão de cinema");
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "10");
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Subcategoria/), "11");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toHaveValue("11");
+
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "20");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toHaveValue("");
+
+    await userEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith(
+        "/gastos",
+        expect.objectContaining({ categoria_id: 20 })
+      )
+    );
+  });
+
+  it("editar um lançamento de subcategoria preenche os dois selects", async () => {
+    api.get.mockResolvedValue(
+      respostaLista({ dados: [gasto(1, { categoria: CATEGORIA_ALUGUEL })] })
+    );
+    montar("/lancamentos", HIERARQUIA);
+
+    await screen.findByText("Lançamento 1");
+    await userEvent.click(screen.getByRole("button", { name: "Editar Lançamento 1" }));
+
+    const modal = await screen.findByRole("dialog");
+    expect(within(modal).getByLabelText(/^Categoria/)).toHaveValue("10");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toHaveValue("11");
+  });
+
+  it("editar um lançamento da categoria mãe deixa a subcategoria vazia", async () => {
+    api.get.mockResolvedValue(
+      respostaLista({ dados: [gasto(1, { categoria: CATEGORIA_MORADIA })] })
+    );
+    montar("/lancamentos", HIERARQUIA);
+
+    await screen.findByText("Lançamento 1");
+    await userEvent.click(screen.getByRole("button", { name: "Editar Lançamento 1" }));
+
+    const modal = await screen.findByRole("dialog");
+    expect(within(modal).getByLabelText(/^Categoria/)).toHaveValue("10");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toHaveValue("");
+  });
+
+  it("duplicar preserva a categoria e a subcategoria", async () => {
+    api.get.mockResolvedValue(
+      respostaLista({ dados: [gasto(1, { categoria: CATEGORIA_ALUGUEL })] })
+    );
+    api.post.mockResolvedValue({ data: { data: gasto(9) } });
+    montar("/lancamentos", HIERARQUIA);
+
+    await screen.findByText("Lançamento 1");
+    await userEvent.click(screen.getByRole("button", { name: "Duplicar Lançamento 1" }));
+
+    const modal = await screen.findByRole("dialog");
+    expect(within(modal).getByRole("heading", { name: "Novo lançamento" })).toBeInTheDocument();
+    expect(within(modal).getByLabelText(/^Categoria/)).toHaveValue("10");
+    expect(within(modal).getByLabelText(/^Subcategoria/)).toHaveValue("11");
+
+    await userEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith(
+        "/gastos",
+        expect.objectContaining({ categoria_id: 11 })
+      )
+    );
+  });
+
+  /** A filha herda o tipo da mãe, então a faixa mostrada é a mesma. */
+  it("a faixa 50/30/20 continua vindo da categoria mãe", async () => {
+    montar("/lancamentos", HIERARQUIA);
+
+    const modal = await abrirNovoLancamento();
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Categoria/), "20");
+    await userEvent.selectOptions(within(modal).getByLabelText(/^Subcategoria/), "21");
+
+    expect(within(modal).getByText(/faixa "Desejo" da regra 50\/30\/20/)).toBeInTheDocument();
+  });
+
+  /**
+   * O filtro é por raiz: escolher "Moradia" traz a árvore inteira, e por isso
+   * oferecer as filhas no mesmo select seria oferecer duas perguntas diferentes
+   * no mesmo lugar.
+   */
+  it("o filtro de categoria lista apenas as categorias principais", async () => {
+    montar("/lancamentos", HIERARQUIA);
+
+    await screen.findByText("Lançamento 1");
+    const filtro = screen.getByLabelText("Categoria");
+    const opcoes = [...filtro.querySelectorAll("option")].map((o) => o.textContent);
+
+    expect(opcoes).toEqual([
+      "Todas as categorias",
+      "Alimentação",
+      "Moradia",
+      "Entretenimento",
+    ]);
   });
 });
