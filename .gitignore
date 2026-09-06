@@ -28,3 +28,33 @@ Thumbs.db
 *.log
 .phpunit.result.cache
 /backend/controle-financeiro/storage/*.key
+
+# Backups e dumps de banco — nunca versionados, nunca publicados
+*.sql
+*.sql.gz
+*.dump
+*.mwb.bak
+backups/
+backup/
+*backup*.json
+
+# Bancos locais
+*.sqlite
+*.sqlite3
+*.db
+
+# Credenciais e tokens
+auth.json
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.*
+credentials.*
+
+# Temporários
+*.tmp
+*.bak
+*.orig
+*.rej
+*~

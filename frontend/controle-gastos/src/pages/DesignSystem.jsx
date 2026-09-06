@@ -43,7 +43,7 @@ export default function DesignSystem() {
 
   return (
     <AppShell
-      usuario={{ name: "Mateus Silva", email: "mateus@exemplo.com" }}
+      usuario={{ name: "Lucas Almeida", email: "lucas@exemplo.com" }}
       onSair={() => toast.aviso("Sair da conta")}
       onNovoLancamento={() => setModalAberto(true)}
     >

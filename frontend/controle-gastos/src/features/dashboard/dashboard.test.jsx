@@ -25,7 +25,7 @@ vi.mock("recharts", async () => {
   };
 });
 
-const USUARIO = { id: 1, name: "Mateus Silva", email: "mateus@exemplo.com" };
+const USUARIO = { id: 1, name: "Lucas Almeida", email: "lucas@exemplo.com" };
 
 /** Resposta completa do endpoint, no formato real da API. */
 function respostaDashboard(sobrescreve = {}) {
@@ -170,7 +170,7 @@ describe("Dashboard — conteúdo", () => {
   it("saúda o usuário e informa o período exibido", async () => {
     montar();
 
-    expect(await screen.findByText(/Mateus/)).toBeInTheDocument();
+    expect(await screen.findByText(/Lucas/)).toBeInTheDocument();
     expect(screen.getByText("Visão de setembro de 2026")).toBeInTheDocument();
   });
 

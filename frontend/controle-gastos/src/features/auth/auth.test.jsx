@@ -12,7 +12,7 @@ vi.mock("../../services/api", () => ({
   default: { get: vi.fn(), post: vi.fn() },
 }));
 
-const USUARIO = { id: 1, name: "Mateus Silva", email: "mateus@exemplo.com" };
+const USUARIO = { id: 1, name: "Lucas Almeida", email: "lucas@exemplo.com" };
 
 function montar(rotaInicial = "/login") {
   return render(
@@ -50,13 +50,13 @@ describe("LoginPage", () => {
 
     montar();
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "mateus@exemplo.com");
+    await userEvent.type(screen.getByLabelText("E-mail"), "lucas@exemplo.com");
     await userEvent.type(screen.getByLabelText("Senha"), "senhaforte1");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
     expect(await screen.findByRole("heading", { name: "Área protegida" })).toBeInTheDocument();
     expect(api.post).toHaveBeenCalledWith("/login", {
-      email: "mateus@exemplo.com",
+      email: "lucas@exemplo.com",
       password: "senhaforte1",
     });
   });
@@ -65,7 +65,7 @@ describe("LoginPage", () => {
     api.post.mockResolvedValue({ data: { token: "tok-123", user: USUARIO } });
 
     montar();
-    await userEvent.type(screen.getByLabelText("E-mail"), "mateus@exemplo.com");
+    await userEvent.type(screen.getByLabelText("E-mail"), "lucas@exemplo.com");
     await userEvent.type(screen.getByLabelText("Senha"), "senhaforte1");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -218,7 +218,7 @@ describe("RotaProtegida", () => {
 
     await screen.findByRole("heading", { name: "Entrar" });
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "mateus@exemplo.com");
+    await userEvent.type(screen.getByLabelText("E-mail"), "lucas@exemplo.com");
     await userEvent.type(screen.getByLabelText("Senha"), "senhaforte1");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 

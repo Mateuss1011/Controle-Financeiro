@@ -24,7 +24,7 @@ class AutenticacaoTest extends TestCase
     public function test_registro_cria_usuario_e_devolve_token(): void
     {
         $resposta = $this->postJson('/api/register', [
-            'name'                  => 'Mateus',
+            'name'                  => 'Lucas',
             'email'                 => 'novo@exemplo.com',
             'password'              => 'senhaforte1',
             'password_confirmation' => 'senhaforte1',
@@ -39,7 +39,7 @@ class AutenticacaoTest extends TestCase
     public function test_registro_nunca_devolve_a_senha(): void
     {
         $resposta = $this->postJson('/api/register', [
-            'name'                  => 'Mateus',
+            'name'                  => 'Lucas',
             'email'                 => 'novo@exemplo.com',
             'password'              => 'senhaforte1',
             'password_confirmation' => 'senhaforte1',
@@ -63,7 +63,7 @@ class AutenticacaoTest extends TestCase
     public function test_registro_recusa_senha_fraca(): void
     {
         $this->postJson('/api/register', [
-            'name'                  => 'Mateus',
+            'name'                  => 'Lucas',
             'email'                 => 'novo@exemplo.com',
             'password'              => '123',
             'password_confirmation' => '123',
@@ -73,12 +73,12 @@ class AutenticacaoTest extends TestCase
     public function test_login_com_credenciais_corretas_devolve_token(): void
     {
         User::factory()->create([
-            'email'    => 'mateus@exemplo.com',
+            'email'    => 'lucas@exemplo.com',
             'password' => Hash::make('senhaforte1'),
         ]);
 
         $this->postJson('/api/login', [
-            'email'    => 'mateus@exemplo.com',
+            'email'    => 'lucas@exemplo.com',
             'password' => 'senhaforte1',
         ])->assertOk()->assertJsonStructure(['user' => ['id', 'name', 'email'], 'token']);
     }
@@ -86,12 +86,12 @@ class AutenticacaoTest extends TestCase
     public function test_login_com_senha_errada_devolve_401(): void
     {
         User::factory()->create([
-            'email'    => 'mateus@exemplo.com',
+            'email'    => 'lucas@exemplo.com',
             'password' => Hash::make('senhaforte1'),
         ]);
 
         $this->postJson('/api/login', [
-            'email'    => 'mateus@exemplo.com',
+            'email'    => 'lucas@exemplo.com',
             'password' => 'errada',
         ])->assertStatus(401)->assertJson(['message' => 'Credenciais inválidas.']);
     }
@@ -140,10 +140,10 @@ class AutenticacaoTest extends TestCase
 
     public function test_me_devolve_o_usuario_autenticado(): void
     {
-        $user = User::factory()->create(['name' => 'Mateus']);
+        $user = User::factory()->create(['name' => 'Lucas']);
 
         $this->actingAs($user)->getJson('/api/me')
             ->assertOk()
-            ->assertJsonPath('data.name', 'Mateus');
+            ->assertJsonPath('data.name', 'Lucas');
     }
 }
