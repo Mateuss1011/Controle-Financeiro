@@ -11,63 +11,113 @@ use Illuminate\Validation\Rule;
 class StoreCategoriaRequest extends FormRequest
 {
     /**
-     * `tipo` passa a ser obrigatório e explícito. Antes ele era omitido pelo
-     * controller e o MariaDB gravava silenciosamente o primeiro valor do ENUM
-     * ('necessidade'), classificando a categoria errado na regra 50/30/20.
+     * `tipo` é obrigatório na categoria principal e IGNORADO na subcategoria,
+     * que herda o do pai. Antes, o controller omitia o campo e o MariaDB
+     * gravava em silêncio o primeiro valor do ENUM, classificando a categoria
+     * na faixa errada da regra 50/30/20.
      */
     public function rules(): array
     {
         return [
-            'nome' => ['required', 'string', 'max:100'],
-            'tipo' => ['required', Rule::enum(TipoCategoria::class)],
+            'nome'             => ['required', 'string', 'max:100'],
+            'categoria_pai_id' => ['sometimes', 'nullable', 'integer'],
+            'tipo'             => [
+                Rule::requiredIf(fn () => $this->input('categoria_pai_id') === null),
+                'nullable',
+                Rule::enum(TipoCategoria::class),
+            ],
         ];
     }
 
     public function after(): array
     {
-        return [fn (Validator $validator) => $this->conferirNomeInedito($validator)];
+        return [
+            function (Validator $validator) {
+                $this->conferirPai($validator);
+                $this->conferirNomeInedito($validator);
+            },
+        ];
     }
 
     /**
-     * O nome tem de ser inédito entre as categorias VISÍVEIS — as globais mais
-     * as do próprio usuário —, comparadas pela forma normalizada.
+     * O pai precisa existir, ser visível para quem pede e ser uma categoria
+     * PRINCIPAL.
      *
-     * Duas coisas foram aprendidas aqui, em fases diferentes:
+     * A profundidade para em dois níveis aqui. Não está no schema porque o
+     * MariaDB não aceita CHECK com subconsulta — então a regra vive onde pode
+     * ser expressa, com teste que a segura.
+     */
+    protected function conferirPai(Validator $validator): void
+    {
+        $paiId = $this->input('categoria_pai_id');
+
+        if ($paiId === null || $validator->errors()->has('categoria_pai_id')) {
+            return;
+        }
+
+        // `Categoria::find` respeita o escopo `visiveis`: o pai de outra pessoa
+        // simplesmente não existe para quem está pedindo.
+        $pai = Categoria::find($paiId);
+
+        if (! $pai) {
+            $validator->errors()->add('categoria_pai_id', 'A categoria selecionada é inválida.');
+
+            return;
+        }
+
+        if ($pai->ehSubcategoria()) {
+            $validator->errors()->add(
+                'categoria_pai_id',
+                'Uma subcategoria não pode ter subcategorias.'
+            );
+
+            return;
+        }
+
+        if ($this->idIgnorado() !== null && (int) $paiId === $this->idIgnorado()) {
+            $validator->errors()->add('categoria_pai_id', 'Uma categoria não pode ser mãe de si mesma.');
+        }
+    }
+
+    /**
+     * O nome tem de ser inédito entre as categorias visíveis DO MESMO NÍVEL —
+     * as globais mais as do próprio usuário, comparadas pela forma normalizada.
      *
-     *  - a regra olhava só `user_id = eu`, então dava para criar uma
-     *    "Alimentação" privada convivendo com a global. As duas apareciam
-     *    idênticas no seletor de lançamento, e cada uma somava para um lado do
-     *    relatório;
-     *  - a comparação era feita pelo `Rule::unique`, ou seja, PELO BANCO. O
-     *    MariaDB usa `utf8mb4_unicode_ci` e ignora caixa e acento; o SQLite dos
-     *    testes é sensível aos dois. A regra existia, mas cada ambiente tinha a
-     *    sua. Agora ela mora em `Categoria::normalizarNome()` e vale igual nos
-     *    dois.
+     * O escopo é o pai, e não o catálogo inteiro: "Manutenção" é legítima em
+     * Moradia e em Transporte, e tratá-las como conflito obrigaria a inventar
+     * nomes como "Manutenção do carro" só para contornar a validação.
      *
-     * A checagem é em PHP, e não em SQL, justamente por isso: nenhuma função do
-     * banco produz o mesmo resultado nos dois motores. O conjunto é pequeno por
-     * natureza — as globais do sistema mais as que o próprio usuário criou à
-     * mão.
+     * A comparação é em PHP porque nenhuma função de banco produz o mesmo
+     * resultado nos dois motores: o MariaDB usa utf8mb4_unicode_ci e ignora
+     * caixa e acento; o SQLite dos testes é sensível aos dois.
      */
     protected function conferirNomeInedito(Validator $validator): void
     {
         $nome = $this->input('nome');
 
-        // Um nome que já falhou em `required`/`string` não chega a ser conflito.
         if (! is_string($nome) || $validator->errors()->has('nome')) {
             return;
         }
 
         $normalizado = Categoria::normalizarNome($nome);
+        $paiId = $this->input('categoria_pai_id');
 
         $conflito = Categoria::withoutGlobalScope('visiveis')
             ->where(fn ($q) => $q->whereNull('user_id')->orWhere('user_id', $this->user()->id))
+            ->when($paiId === null,
+                fn ($q) => $q->whereNull('categoria_pai_id'),
+                fn ($q) => $q->where('categoria_pai_id', $paiId))
             ->when($this->idIgnorado(), fn ($q, $id) => $q->whereKeyNot($id))
             ->get(['id', 'nome'])
             ->contains(fn (Categoria $existente) => Categoria::normalizarNome($existente->nome) === $normalizado);
 
         if ($conflito) {
-            $validator->errors()->add('nome', 'Já existe uma categoria com esse nome.');
+            $validator->errors()->add(
+                'nome',
+                $paiId === null
+                    ? 'Já existe uma categoria com esse nome.'
+                    : 'Já existe uma subcategoria com esse nome nesta categoria.'
+            );
         }
     }
 
@@ -80,10 +130,11 @@ class StoreCategoriaRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'nome.required' => 'Informe o nome da categoria.',
-            'nome.max'      => 'O nome deve ter no máximo 100 caracteres.',
-            'tipo.required' => 'Selecione o tipo da categoria.',
-            'tipo.enum'     => 'O tipo deve ser necessidade, desejo ou poupanca.',
+            'nome.required'    => 'Informe o nome da categoria.',
+            'nome.max'         => 'O nome deve ter no máximo 100 caracteres.',
+            'tipo.required'    => 'Selecione o tipo da categoria.',
+            'tipo.enum'        => 'O tipo deve ser necessidade, desejo ou poupanca.',
+            'categoria_pai_id.integer' => 'A categoria selecionada é inválida.',
         ];
     }
 }

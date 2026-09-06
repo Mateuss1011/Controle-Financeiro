@@ -13,16 +13,25 @@ class CategoriaResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'      => $this->id,
-            'nome'    => $this->nome,
-            'tipo'    => $this->tipo->value,
-            'rotulo_tipo' => $this->tipo->rotulo(),
-            'global'  => $this->ehGlobal(),
-            // Só na listagem, que é a única consulta que carrega a contagem.
-            // A tela de Categorias precisa dela para dizer, ANTES do clique, se
-            // a exclusão vai ser recusada — e o escopo global de Gasto já
-            // garante que o número é o uso de quem está pedindo.
-            'total_lancamentos' => $this->whenCounted('gastos'),
+            'id'               => $this->id,
+            'nome'             => $this->nome,
+            'tipo'             => $this->tipo->value,
+            'rotulo_tipo'      => $this->tipo->rotulo(),
+            'global'           => $this->ehGlobal(),
+            'categoria_pai_id' => $this->categoria_pai_id,
+            'subcategoria'     => $this->ehSubcategoria(),
+
+            // Só na listagem, que é a única consulta que carrega as contagens.
+            //
+            // `total_lancamentos` é ACUMULADO: numa categoria principal soma os
+            // lançamentos dela e os de todas as filhas, porque é esse o número
+            // que decide se ela pode ser excluída. `lancamentos_diretos` é o
+            // que aponta para ela sozinha — a diferença entre os dois é o que
+            // vive nas subcategorias.
+            'total_lancamentos'    => $this->when(isset($this->total_lancamentos), fn () => (int) $this->total_lancamentos),
+            'lancamentos_diretos'  => $this->whenCounted('gastos'),
+
+            'subcategorias' => CategoriaResource::collection($this->whenLoaded('filhas')),
         ];
     }
 }

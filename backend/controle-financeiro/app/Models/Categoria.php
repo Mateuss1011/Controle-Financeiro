@@ -18,6 +18,16 @@ use Illuminate\Support\Facades\Auth;
  *
  * Por isso Categoria NÃO usa a trait BelongsToUser: o escopo não é "só o que é
  * meu", e sim "o que é meu OU global".
+ *
+ * DOIS NÍVEIS, e apenas dois: `categoria_pai_id` nulo é uma categoria
+ * principal; preenchido, uma subcategoria. Um lançamento aponta para qualquer
+ * um dos dois — "Moradia" e "Moradia › Aluguel" são ambos um `categoria_id`,
+ * o que dispensou reescrever `gastos` para introduzir a hierarquia.
+ *
+ * O TIPO É DERIVADO, não escolhido, quando há pai. Uma subcategoria de Moradia
+ * é necessidade porque Moradia é — não porque alguém marcou a caixa certa. A
+ * derivação acontece em `saving`, então não existe caminho de escrita que
+ * produza "Moradia = necessidade, Aluguel = desejo".
  */
 class Categoria extends Model
 {
@@ -26,6 +36,7 @@ class Categoria extends Model
 
     protected $fillable = [
         'user_id',
+        'categoria_pai_id',
         'nome',
         'tipo',
     ];
@@ -54,6 +65,103 @@ class Categoria extends Model
                 $query->whereRaw('1 = 0');
             }
         });
+
+        /*
+         * O tipo da subcategoria vem do pai, sempre.
+         *
+         * Fica em `saving` e não numa regra de validação porque validação se
+         * contorna: um seeder, um comando de console ou um `update()` direto
+         * passariam por cima. Aqui o valor é recalculado no caminho por onde
+         * toda gravação passa, então a inconsistência não tem por onde entrar.
+         */
+        static::saving(function (Categoria $categoria) {
+            if ($categoria->categoria_pai_id === null) {
+                return;
+            }
+
+            $pai = static::withoutGlobalScopes()->find($categoria->categoria_pai_id);
+
+            if ($pai) {
+                $categoria->tipo = $pai->tipo;
+            }
+        });
+
+        /*
+         * Trocar o tipo de uma categoria principal reclassifica as filhas.
+         *
+         * Sem isto, mover "Saúde" de necessidade para desejo deixaria
+         * "Academia" como necessidade — a inconsistência que o `saving` acima
+         * impede na criação voltaria pela porta da edição.
+         */
+        static::updated(function (Categoria $categoria) {
+            if ($categoria->categoria_pai_id !== null || ! $categoria->wasChanged('tipo')) {
+                return;
+            }
+
+            static::withoutGlobalScopes()
+                ->where('categoria_pai_id', $categoria->id)
+                ->update(['tipo' => $categoria->tipo->value]);
+        });
+    }
+
+    // ------------------------------------------------------------ hierarquia
+
+    public function pai(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'categoria_pai_id');
+    }
+
+    public function filhas(): HasMany
+    {
+        return $this->hasMany(self::class, 'categoria_pai_id');
+    }
+
+    public function ehPrincipal(): bool
+    {
+        return $this->categoria_pai_id === null;
+    }
+
+    public function ehSubcategoria(): bool
+    {
+        return $this->categoria_pai_id !== null;
+    }
+
+    /**
+     * O id pelo qual esta categoria é somada nos agregados financeiros.
+     *
+     * Uma subcategoria soma na mãe: quem orçou R$ 1.500 em Moradia espera que o
+     * gasto em "Moradia › Aluguel" consuma esse limite. Sem isso o orçamento
+     * ficaria eternamente zerado e o donut do Dashboard viraria trinta fatias.
+     */
+    public function raizId(): int
+    {
+        return $this->categoria_pai_id ?? $this->id;
+    }
+
+    /** Só categorias principais. */
+    public function scopePrincipais(Builder $query): Builder
+    {
+        return $query->whereNull('categoria_pai_id');
+    }
+
+    /** Só subcategorias, opcionalmente de um pai específico. */
+    public function scopeSubcategorias(Builder $query, ?int $paiId = null): Builder
+    {
+        return $query->whereNotNull('categoria_pai_id')
+            ->when($paiId, fn (Builder $q) => $q->where('categoria_pai_id', $paiId));
+    }
+
+    /**
+     * Expressão SQL da categoria raiz, para agrupar gastos.
+     *
+     * Coluna derivada seria mais rápida de ler e mais uma coisa a manter em dia;
+     * `COALESCE` resolve com o dado que já existe e se comporta igual em MariaDB
+     * e SQLite — diferença que já mordeu este projeto na Fase I, quando
+     * `YEAR()/MONTH()` passavam em produção e quebravam nos testes.
+     */
+    public static function expressaoRaiz(string $tabela = 'categorias'): string
+    {
+        return "COALESCE({$tabela}.categoria_pai_id, {$tabela}.id)";
     }
 
     public function user(): BelongsTo
