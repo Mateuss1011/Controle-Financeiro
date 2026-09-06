@@ -18,12 +18,13 @@ use Illuminate\Support\Facades\Schema;
  * vez de criar uma tabela de subcategorias — os lançamentos que já existem
  * seguem válidos sem reescrita.
  *
- * O índice único passa a incluir o pai. Sem isso, "Manutenção" só poderia
- * existir em um lugar do catálogo, quando ela é legítima tanto em Moradia
- * quanto em Transporte. A garantia de verdade contra duplicidade continua sendo
- * `Categoria::normalizarNome()` na aplicação, que cobre caixa e acento — o
- * índice é rede contra concorrência, e no MariaDB nem alcança as principais,
- * porque NULLs são distintos num índice único.
+ * ORDEM DOS ÍNDICES: o único novo é criado ANTES de o antigo sair. Não é
+ * capricho — o `(user_id, nome)` antigo é o índice que dá suporte à foreign key
+ * `user_id → users`, e o MariaDB recusa removê-lo enquanto for o único que
+ * serve à FK ("needed in a foreign key constraint"). Criando o novo primeiro,
+ * que também começa por `user_id`, a FK nunca fica descoberta. O SQLite dos
+ * testes não faz essa exigência, então a ordem errada passaria na suíte e
+ * quebraria só em produção.
  */
 return new class extends Migration
 {
@@ -40,23 +41,27 @@ return new class extends Migration
         });
 
         Schema::table('categorias', function (Blueprint $table) {
-            $table->dropUnique('categorias_user_id_nome_unique');
             $table->unique(
                 ['user_id', 'categoria_pai_id', 'nome'],
                 'categorias_user_pai_nome_unique'
             );
         });
+
+        Schema::table('categorias', function (Blueprint $table) {
+            $table->dropUnique('categorias_user_id_nome_unique');
+        });
     }
 
     public function down(): void
     {
-        // Volta ao índice plano ANTES de largar a coluna: o único novo depende
-        // dela. Subcategorias com nome repetido entre pais diferentes fariam a
-        // recriação do índice antigo falhar — e falhar é o certo, porque
-        // reverter com esse dado significaria escolher qual linha perder.
+        // Mesma lógica ao contrário: o índice antigo volta antes de o novo sair,
+        // pela mesma razão de suporte à foreign key.
+        Schema::table('categorias', function (Blueprint $table) {
+            $table->unique(['user_id', 'nome'], 'categorias_user_id_nome_unique');
+        });
+
         Schema::table('categorias', function (Blueprint $table) {
             $table->dropUnique('categorias_user_pai_nome_unique');
-            $table->unique(['user_id', 'nome'], 'categorias_user_id_nome_unique');
         });
 
         Schema::table('categorias', function (Blueprint $table) {

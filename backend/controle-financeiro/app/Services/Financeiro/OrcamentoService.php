@@ -132,15 +132,29 @@ class OrcamentoService
         return $recorrentes->replace($especificos);
     }
 
-    /** @return Collection<int, float> */
+    /**
+     * Gasto de cada categoria RAIZ na competência.
+     *
+     * O orçamento existe só na categoria principal, mas os lançamentos moram
+     * nas subcategorias. Somar por `categoria_id` exato deixaria todo orçamento
+     * eternamente zerado: quem definiu R$ 1.500 em Moradia e lançou R$ 900 em
+     * "Moradia › Aluguel" veria consumo zero e um limite intacto que não
+     * existe mais.
+     *
+     * Por isso a chave é a raiz — `COALESCE(categoria_pai_id, id)`. Um gasto
+     * direto na mãe e um gasto em qualquer filha caem no mesmo balde.
+     *
+     * @return Collection<int, float>
+     */
     private function gastosPorCategoria(int $userId, CarbonImmutable $competencia): Collection
     {
         return Gasto::withoutGlobalScope('doUsuario')
-            ->where('user_id', $userId)
+            ->where('gastos.user_id', $userId)
             ->daCompetencia($competencia->year, $competencia->month)
-            ->groupBy('categoria_id')
-            ->selectRaw('categoria_id, SUM(valor) as total')
-            ->pluck('total', 'categoria_id')
+            ->join('categorias', 'categorias.id', '=', 'gastos.categoria_id')
+            ->groupBy('raiz')
+            ->selectRaw(Categoria::expressaoRaiz() . ' as raiz, SUM(gastos.valor) as total')
+            ->pluck('total', 'raiz')
             ->map(fn ($total) => (float) $total);
     }
 

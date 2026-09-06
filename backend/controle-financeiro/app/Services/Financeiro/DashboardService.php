@@ -95,7 +95,9 @@ class DashboardService
     private function lancamentosDa(int $userId, CarbonImmutable $competencia): Collection
     {
         return Gasto::withoutGlobalScope('doUsuario')
-            ->with('categoria')
+            // `categoria.pai` junto: sem ele, agrupar pela raiz dispararia uma
+            // consulta por lançamento de subcategoria — N+1 clássico.
+            ->with('categoria.pai')
             ->where('user_id', $userId)
             ->daCompetencia($competencia->year, $competencia->month)
             ->orderByDesc('data')
@@ -130,16 +132,26 @@ class DashboardService
      */
     private function porCategoria(Collection $lancamentos, float $total): array
     {
+        /*
+         * Agrupa pela categoria RAIZ, não pela categoria exata do lançamento.
+         *
+         * Com subcategorias, agrupar pelo `categoria_id` pulverizaria o donut:
+         * "Moradia" viraria três fatias finas — Aluguel, Água, Energia — e a
+         * leitura de relance, que é a razão de existir do gráfico, se perderia.
+         * A subcategoria é detalhe; a categoria é a unidade de comparação.
+         */
         return $lancamentos
-            ->groupBy(fn (Gasto $g) => $g->categoria_id)
+            ->groupBy(fn (Gasto $g) => $g->categoria?->raizId())
             ->map(function (Collection $doGrupo) use ($total) {
                 $categoria = $doGrupo->first()->categoria;
+                // A raiz é quem dá nome ao grupo; `pai` já vem carregado.
+                $raiz = $categoria?->pai ?? $categoria;
                 $soma = (float) $doGrupo->sum(fn (Gasto $g) => (float) $g->valor);
 
                 return [
-                    'categoria_id' => $categoria?->id,
-                    'categoria'    => $categoria?->nome ?? 'Sem categoria',
-                    'tipo'         => $categoria?->tipo->value,
+                    'categoria_id' => $raiz?->id,
+                    'categoria'    => $raiz?->nome ?? 'Sem categoria',
+                    'tipo'         => $raiz?->tipo->value,
                     'total'        => round($soma, 2),
                     'percentual'   => $total > 0 ? round(($soma / $total) * 100, 1) : 0.0,
                 ];

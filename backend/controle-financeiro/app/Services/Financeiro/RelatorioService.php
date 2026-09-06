@@ -3,10 +3,12 @@
 namespace App\Services\Financeiro;
 
 use App\Enums\TipoCategoria;
+use App\Models\Categoria;
 use App\Models\Gasto;
 use App\Models\Salario;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Relatórios: a mesma verdade do Dashboard, esticada no tempo.
@@ -282,9 +284,19 @@ class RelatorioService
                 $de->toDateString(),
                 $ate->endOfMonth()->toDateString(),
             ])
+            /*
+             * O ranking é por categoria RAIZ.
+             *
+             * Um segundo join busca a raiz de cada lançamento: para um gasto em
+             * subcategoria, a mãe; para um gasto direto, ela mesma. Sem isso o
+             * ranking listaria "Aluguel", "Água" e "Energia" separados, e a
+             * pergunta que a tela responde — "onde meu dinheiro foi?" — ficaria
+             * espalhada por linhas que somam a mesma coisa.
+             */
             ->join('categorias', 'categorias.id', '=', 'gastos.categoria_id')
-            ->groupBy('categorias.id', 'categorias.nome', 'categorias.tipo')
-            ->selectRaw('categorias.id as categoria_id, categorias.nome as categoria, categorias.tipo as tipo, SUM(gastos.valor) as total, COUNT(*) as lancamentos')
+            ->join('categorias as raizes', 'raizes.id', '=', DB::raw(Categoria::expressaoRaiz()))
+            ->groupBy('raizes.id', 'raizes.nome', 'raizes.tipo')
+            ->selectRaw('raizes.id as categoria_id, raizes.nome as categoria, raizes.tipo as tipo, SUM(gastos.valor) as total, COUNT(*) as lancamentos')
             ->orderByDesc('total')
             ->get();
 
