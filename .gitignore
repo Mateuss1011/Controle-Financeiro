@@ -14,10 +14,11 @@ build/
 /backend/controle-financeiro/public/build/
 /backend/controle-financeiro/public/hot
 
-# IDEs
+# IDEs e ferramentas locais
 .idea/
 .vscode/
 .fleet/
+.claude/
 *.iml
 
 # Sistema operacional
