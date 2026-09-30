@@ -1,5 +1,12 @@
 # Controle Financeiro
 
+![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-10.4-003545?logo=mariadb&logoColor=white)
+![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-green)
+
 Aplicação web de finanças pessoais construída em torno de uma ideia: **todo
 gasto pertence a uma das três faixas da regra 50/30/20** — necessidades, desejos
 e poupança. A classificação não é um rótulo decorativo; é o que alimenta o
@@ -7,6 +14,23 @@ diagnóstico do mês, o quanto ainda dá para gastar por dia e o alerta de que u
 faixa estourou.
 
 Backend em Laravel 12 com API REST autenticada por token, frontend em React 19.
+
+## Sumário
+
+- [Funcionalidades](#funcionalidades)
+- [Stack](#stack)
+- [Arquitetura](#arquitetura)
+- [Requisitos](#requisitos)
+- [Instalação](#instalação)
+- [Execução](#execução)
+- [Demonstração](#demonstração)
+- [Testes](#testes)
+- [Build](#build)
+- [Antes de publicar](#antes-de-publicar)
+- [Status do projeto](#status-do-projeto)
+- [Decisões técnicas registradas](#decisões-técnicas-registradas)
+- [Licença](#licença)
+- [Autor](#autor)
 
 ---
 
@@ -298,3 +322,16 @@ paginação seria complexidade nas duas pontas para um problema que não existe 
 volume real nem no previsível. Se um dia o volume mudar, o caminho é paginar
 **junto com** uma busca no `select` — as duas coisas juntas, não a paginação
 sozinha.
+
+---
+
+## Licença
+
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## Autor
+
+**Mateus Silva Santos**
+
+- GitHub: [@Mateuss1011](https://github.com/Mateuss1011)
+- LinkedIn: [Mateus Silva Santos](https://www.linkedin.com/in/mateus-silva-santos-678082283)
