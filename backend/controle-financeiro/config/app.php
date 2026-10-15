@@ -56,6 +56,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Conta de demonstracao publica
+    |--------------------------------------------------------------------------
+    |
+    | O e-mail da conta cujas credenciais sao publicadas no README. Quem entra
+    | com ela mexe em dados ficticios a vontade, mas NAO pode trocar o proprio
+    | e-mail nem a propria senha: as duas rotas exigem a senha atual, e a senha
+    | atual esta publicada. Sem esta trava, o primeiro visitante que quisesse
+    | poderia tomar a conta e deixar a demonstracao inacessivel para todos.
+    |
+    | Vazio em desenvolvimento e nos testes: nenhuma conta e tratada como demo,
+    | e o comportamento do produto nao muda em lugar nenhum.
+    |
+    */
+
+    'conta_demo' => env('DEMO_EMAIL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

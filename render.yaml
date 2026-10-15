@@ -94,3 +94,14 @@ services:
       # A imagem escuta em 8080 (porta não-privilegiada, para rodar sem root).
       - key: PORT
         value: 8080
+
+      # A conta pública de demonstração. Preenchido, ela perde o direito de
+      # trocar o próprio e-mail e a própria senha — que estão publicados no
+      # README e, sem a trava, deixariam qualquer visitante tomar a conta.
+      - key: DEMO_EMAIL
+        value: demo@controlefinanceiro.local
+
+      # O DemoDataSeeder recusa rodar em produção sem este consentimento. Ele
+      # roda uma vez, da máquina de quem publica, e não no boot do container.
+      - key: DEMO_SEED_ALLOWED
+        value: false

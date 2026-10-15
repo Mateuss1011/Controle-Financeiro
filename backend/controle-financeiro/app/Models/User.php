@@ -32,6 +32,20 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Esta e a conta publica de demonstracao?
+     *
+     * Decidido por configuracao, e nao por uma constante do seeder: assim a
+     * trava so existe no ambiente onde a conta realmente e publica, e some
+     * sozinha em desenvolvimento, onde DEMO_EMAIL nao esta definido.
+     */
+    public function ehContaDeDemonstracao(): bool
+    {
+        $demo = config('app.conta_demo');
+
+        return filled($demo) && $this->email === $demo;
+    }
+
     public function gastos(): HasMany
     {
         return $this->hasMany(Gasto::class);

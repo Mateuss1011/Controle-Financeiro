@@ -187,6 +187,27 @@ Credenciais da conta de demonstração:
 > gastos, orçamentos e metas foram inventados para exibir o produto. Nenhum
 > dado real de pessoa alguma está neste repositório.
 
+### O que a conta de demonstração garante — e o que não garante
+
+**Garante isolamento.** Quem entra com a conta demo não alcança dado de mais
+ninguém, nem manipulando ids na URL. O isolamento é aplicado em duas camadas
+independentes — escopo global nos models e Policy em cada rota — e está coberto
+por 17 testes que atacam vetores diferentes: listar, ver por id, editar por id,
+excluir por id e criar apontando para a categoria de outro. Criar sua própria
+conta no site público lhe dá um espaço inteiramente separado.
+
+**Não garante privacidade dentro da própria conta demo.** Ela é uma conta só,
+com a senha publicada: todos os visitantes entram no mesmo espaço e enxergam as
+alterações uns dos outros. É o ponto da demonstração — e o motivo de os dados
+serem fictícios. Se alguém bagunçar, rodar o seeder de novo restaura tudo.
+
+**A conta demo não muda de dono.** Com `DEMO_EMAIL` configurado, ela perde o
+direito de trocar o próprio e-mail e a própria senha. Sem essa trava, o
+primeiro visitante que quisesse usaria a senha publicada para tomar a conta e
+deixar a demonstração inacessível para todos. `ContaDeDemonstracaoTest` prova
+as duas metades: a conta demo é recusada, e qualquer outro usuário continua
+editando o próprio perfil normalmente.
+
 O seeder é **idempotente**: rodar de novo apaga apenas o que pertence à conta de
 demonstração e recria tudo, sem duplicar. Ele nunca toca em outros usuários nem
 nas categorias globais. E **não roda em produção** — lá ele só executa com
@@ -195,7 +216,7 @@ nas categorias globais. E **não roda em produção** — lá ele só executa co
 ## Testes
 
 ```bash
-# Backend — 347 testes, 1.318 assertions
+# Backend — 352 testes, 1.328 assertions
 cd backend/controle-financeiro && php artisan test
 
 # Frontend — 268 testes
