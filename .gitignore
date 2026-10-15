@@ -7,6 +7,8 @@ node_modules/
 .env
 .env.*
 !.env.example
+# Modelos de ambiente: nome sem segredo dentro, so os campos a preencher.
+!.env.*.example
 
 # Build
 dist/
@@ -59,3 +61,7 @@ credentials.*
 *.orig
 *.rej
 *~
+
+# Arquivos de ferramenta que nao pertencem ao projeto
+*.code-workspace
+/backend/package-lock.json

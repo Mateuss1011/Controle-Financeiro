@@ -17,6 +17,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /*
+         * Atrás do proxy da hospedagem, o IP que chega é o do proxy.
+         *
+         * Sem isto, `throttle:autenticacao` — que é limitado por IP — contaria
+         * TODO MUNDO como um visitante só: o primeiro usuário a errar a senha
+         * cinco vezes bloquearia o login de todos os outros. E `url()` geraria
+         * http:// num site servido por https://, porque o Laravel não leria o
+         * X-Forwarded-Proto.
+         *
+         * Confiar em `*` é correto aqui e seria errado num servidor exposto
+         * direto à internet: o container só é alcançável através do proxy da
+         * plataforma, que reescreve o X-Forwarded-For em toda requisição. Sem
+         * proxy na frente, qualquer um poderia forjar o cabeçalho e escapar do
+         * limitador.
+         */
+        $middleware->trustProxies(at: '*');
+
         $middleware->throttleApi('api');
 
         // A API é stateless (Bearer token). Nenhuma rota de API deve tentar

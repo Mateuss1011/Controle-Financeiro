@@ -26,6 +26,7 @@ Backend em Laravel 12 com API REST autenticada por token, frontend em React 19.
 - [Demonstração](#demonstração)
 - [Testes](#testes)
 - [Build](#build)
+- [Publicação na internet](#publicação-na-internet)
 - [Antes de publicar](#antes-de-publicar)
 - [Status do projeto](#status-do-projeto)
 - [Decisões técnicas registradas](#decisões-técnicas-registradas)
@@ -194,7 +195,7 @@ nas categorias globais. E **não roda em produção** — lá ele só executa co
 ## Testes
 
 ```bash
-# Backend — 344 testes, 1.314 assertions
+# Backend — 347 testes, 1.318 assertions
 cd backend/controle-financeiro && php artisan test
 
 # Frontend — 268 testes
@@ -216,6 +217,120 @@ npm run build
 
 A saída vai para `dist/`. Sirva esses arquivos estáticos e aponte
 `VITE_API_URL` para a URL pública da API.
+
+## Publicação na internet
+
+O projeto é desenhado para rodar dividido em três serviços, todos com plano
+gratuito permanente:
+
+| Peça | Serviço | O que roda lá |
+|---|---|---|
+| Frontend | [Vercel](https://vercel.com) | Os estáticos do `npm run build` |
+| API | [Render](https://render.com) — web service Docker | A imagem do [`Dockerfile`](backend/controle-financeiro/Dockerfile) |
+| Banco | [Aiven for MySQL](https://aiven.io/free-mysql-database) | MySQL 8 gerenciado |
+
+A divisão só é possível porque a API é **stateless**: a autenticação é por
+token Bearer, não por cookie de sessão (`supports_credentials` é `false` em
+`config/cors.php`). Front e back podem viver em domínios diferentes sem
+nenhuma negociação de SameSite.
+
+### Frontend na Vercel
+
+Root Directory: `frontend/controle-gastos`. O framework é detectado como Vite e
+o build é `npm run build`.
+
+O [`vercel.json`](frontend/controle-gastos/vercel.json) existe por um motivo só:
+o app usa `BrowserRouter`, com caminhos reais como `/metas`. Sem o rewrite para
+`index.html`, um F5 nessa URL procuraria um arquivo `metas` que não existe e
+devolveria 404. A Vercel resolve os arquivos estáticos antes de aplicar
+rewrites, então `/assets/*` continua sendo servido normalmente.
+
+Variável de ambiente:
+
+```
+VITE_API_URL = https://<sua-api>.onrender.com/api
+```
+
+### API no Render
+
+O serviço inteiro está descrito em [`render.yaml`](render.yaml), na raiz do
+repositório: **New → Blueprint**, aponte para este repositório e o Render cria
+o web service com o plano, a região, o health check e as variáveis já no lugar.
+As nove variáveis marcadas `sync: false` são pedidas na criação e nunca ficam
+versionadas.
+
+Pela interface, se preferir: Web Service, Language **Docker**, Root Directory
+`backend/controle-financeiro`, Health Check Path `/up`, plano **Free**.
+
+Variáveis de ambiente:
+
+| Variável | Valor |
+|---|---|
+| `APP_KEY` | saída de `php artisan key:generate --show` |
+| `APP_ENV` | `production` |
+| `APP_DEBUG` | `false` |
+| `APP_URL` | `https://<sua-api>.onrender.com` |
+| `DB_CONNECTION` | `mysql` |
+| `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | do painel do Aiven |
+| `MYSQL_ATTR_SSL_CA` | caminho do certificado do Aiven (a conexão exige TLS) |
+| `CORS_ALLOWED_ORIGINS` | `https://<seu-app>.vercel.app` |
+| `LOG_CHANNEL` | `stderr` — no plano gratuito não há disco persistente |
+| `PORT` | `8080` — é a porta em que a imagem escuta |
+
+### Migrations e catálogo
+
+O plano gratuito do Render não dá shell nem one-off jobs, e o `Dockerfile` de
+propósito **não** roda migrations ao subir: um container que migra sozinho
+aplica schema em horário imprevisível e sem ninguém olhando o resultado.
+
+Rode da sua máquina, apontando para o banco remoto. Copie
+[`.env.aiven.example`](backend/controle-financeiro/.env.aiven.example) para
+`.env.aiven`, preencha com os dados do painel do Aiven — o arquivo é ignorado
+pelo Git — e use `--env=aiven`:
+
+```bash
+cd backend/controle-financeiro
+cp .env.aiven.example .env.aiven   # e preencha
+php artisan migrate --force --env=aiven
+php artisan db:seed --class=CategoriaSeeder --env=aiven
+```
+
+O `--env=aiven` existe para que o `.env` local nunca precise ser trocado de
+lugar e devolvido depois. Funcionaria — até a vez em que alguém esquecesse de
+devolver e rodasse uma migration no banco errado.
+
+Para a conta de demonstração pública, veja a seção [Demonstração](#demonstração).
+Em produção o `DemoDataSeeder` só executa com `DEMO_SEED_ALLOWED=true`.
+
+### Cartão de crédito
+
+Nenhum dos três exige cartão, e em nenhum deles estourar a franquia vira conta
+a pagar:
+
+- **Aiven** — a documentação é explícita: não é preciso cartão e o serviço pode
+  ser usado por tempo indeterminado sem custo.
+- **Vercel Hobby** — plano gratuito sem ciclo de cobrança. Ao exceder um
+  limite, o recurso pausa por 30 dias em vez de gerar fatura.
+- **Render** — o cartão não é exigido para criar um serviço Free. Ele decide
+  apenas o que acontece quando a franquia de banda ou de build acaba: **sem
+  cartão, os serviços são suspensos até o mês seguinte**, nunca cobrados.
+
+Uma restrição que vale ler antes de começar: o **plano Hobby da Vercel é
+limitado a uso pessoal e não comercial**. Um projeto de portfólio, aberto para
+outras pessoas conhecerem, está dentro. Cobrar pelo acesso, não.
+
+### O que esperar do plano gratuito
+
+- **A API dorme.** Sem tráfego por 15 minutos, o Render desliga a instância; a
+  requisição seguinte espera cerca de um minuto enquanto ela sobe. O primeiro
+  acesso do dia é lento — não é defeito do app.
+- **São 750 horas de instância por mês**, por workspace. Um serviço rodando
+  ininterruptamente consome ~720.
+- **O banco gratuito do Aiven tem 1 GB** e no máximo 76 conexões simultâneas.
+  Backups estão incluídos. O Aiven pode desligar um serviço ocioso, avisando
+  antes; religar é um clique.
+- Nada disso é contrato. Fly.io, Railway e Heroku já encerraram seus planos
+  gratuitos. Mantenha o backup do banco fora do repositório.
 
 ## Antes de publicar
 

@@ -1,0 +1,96 @@
+# Blueprint do Render — a API em um serviço web Docker.
+#
+# Existe para que a configuração do serviço seja CÓDIGO e não uma sequência de
+# cliques num painel. Sem isto, as doze variáveis abaixo viram conhecimento que
+# mora só na cabeça de quem configurou, e refazer o serviço depois de um
+# acidente é reconstruir de memória.
+#
+# Como aplicar: Render → New → Blueprint → aponte para este repositório.
+# As variáveis marcadas `sync: false` são pedidas na criação e nunca ficam aqui.
+services:
+  - type: web
+    name: controle-financeiro-api
+    runtime: docker
+
+    # 0,1 de CPU e 512 MB. Dorme após 15 minutos sem tráfego e leva cerca de um
+    # minuto para acordar — é a contrapartida de custar R$ 0.
+    plan: free
+
+    # Virgínia é a região do Render mais próxima do Brasil. Crie o banco no
+    # Aiven na região mais próxima DESTA: cada consulta que atravessar o
+    # Atlântico paga a latência duas vezes.
+    region: virginia
+
+    # O Dockerfile e o contexto de build saem daqui. O frontend é outro deploy,
+    # em outro serviço, e não entra nesta imagem.
+    rootDir: backend/controle-financeiro
+
+    # O Laravel já expõe este endereço (`health:` em bootstrap/app.php). Sem um
+    # health check, o Render considera o serviço no ar assim que o container
+    # sobe — mesmo que o PHP esteja respondendo 500.
+    healthCheckPath: /up
+
+    # Migrations NÃO rodam aqui, de propósito. Um container que migra sozinho
+    # aplica schema em horário imprevisível, sem ninguém lendo o resultado, e
+    # no plano gratuito ainda pode reiniciar a qualquer momento — o que faria a
+    # migration rodar de novo. O procedimento está no README.
+
+    envVars:
+      - key: APP_NAME
+        value: Controle Financeiro
+      - key: APP_ENV
+        value: production
+
+      # Com `true`, um erro 500 devolveria a exceção original, o caminho
+      # absoluto do arquivo no servidor e o stack trace inteiro no JSON.
+      - key: APP_DEBUG
+        value: false
+
+      - key: APP_LOCALE
+        value: pt_BR
+      - key: APP_FALLBACK_LOCALE
+        value: pt_BR
+
+      # `php artisan key:generate --show` na sua máquina. Nunca neste arquivo.
+      - key: APP_KEY
+        sync: false
+
+      # A URL que o Render gera. Preencha depois do primeiro deploy.
+      - key: APP_URL
+        sync: false
+
+      # Não há disco persistente no plano gratuito: log em arquivo some a cada
+      # reinício. `stderr` vai para o painel de logs do Render.
+      - key: LOG_CHANNEL
+        value: stderr
+
+      # `debug` grava dados de requisição, inclusive o que o usuário digitou.
+      - key: LOG_LEVEL
+        value: warning
+
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # O Aiven só aceita conexão por TLS. Este é o caminho do certificado
+      # dentro do container — use um Secret File do Render para colocá-lo lá.
+      - key: MYSQL_ATTR_SSL_CA
+        sync: false
+
+      # A origem do frontend na Vercel. Sem isto, o navegador bloqueia toda
+      # chamada à API e a tela fica vazia sem erro visível.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      # A imagem escuta em 8080 (porta não-privilegiada, para rodar sem root).
+      - key: PORT
+        value: 8080
